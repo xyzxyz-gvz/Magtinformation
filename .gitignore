@@ -1,0 +1,23 @@
+# Node / Next.js
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Pipeline data (large; regenerate via pipeline)
+public/data/*.json
+!public/data/governments.json
+!public/data/parties.json
+public/data/meetings/
+public/data/member_votes/
+pipeline/logs/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

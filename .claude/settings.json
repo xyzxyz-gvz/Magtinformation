@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"http://localhost:3001/votes?gov=mette-frederiksen-ii\" -o /tmp/page.html)",
+      "Bash(curl -s \"http://localhost:3001/votes\" -o /tmp/page2.html)",
+      "Bash(curl -s \"http://localhost:3001/votes?gov=mette-frederiksen-ii\")",
+      "Bash(curl -s \"http://localhost:3001/votes\")",
+      "Bash(curl -s \"http://localhost:3001/votes?gov=helle-thorning-schmidt-ii\")",
+      "Bash(curl -s 'http://localhost:3001/votes?gov=__TRACKED_VAR__')",
+      "Bash(curl -s 'http://localhost:3001/votes?outcome=__TRACKED_VAR__')",
+      "Bash(curl -s \"http://localhost:3001/votes?gov=mette-frederiksen-i\")",
+      "Bash(curl -s \"http://localhost:3001/votes?gov=mette-frederiksen-i&outcome=passed\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -o /tmp/p.html -w 'HTTP %{http_code}\\\\n' http://localhost:3000__TRACKED_VAR__)",
+      "Bash(curl -s \"http://localhost:3000/votes?topic=klima\")",
+      "Bash(curl -s \"http://localhost:3000/analyse/koalitioner\")",
+      "Bash(curl -s \"http://localhost:3000/members/oprorere\")"
+    ]
+  }
+}

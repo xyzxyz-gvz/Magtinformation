@@ -1,0 +1,47 @@
+[
+  {
+    "slug": "mette-frederiksen-ii",
+    "name": "Mette Frederiksen II",
+    "type": "Flertalsregering",
+    "start": "2022-12-15",
+    "end": null,
+    "parties": ["S", "V", "M"],
+    "description": "Flertalsregering bestående af Socialdemokratiet, Venstre og Moderaterne (SVM-regering)."
+  },
+  {
+    "slug": "mette-frederiksen-i",
+    "name": "Mette Frederiksen I",
+    "type": "Etpartiregering",
+    "start": "2019-06-27",
+    "end": "2022-12-15",
+    "parties": ["S"],
+    "description": "Etpartiregering bestående af Socialdemokratiet."
+  },
+  {
+    "slug": "lars-lokke-rasmussen-iii",
+    "name": "Lars Løkke Rasmussen III",
+    "type": "Koalitionsregering",
+    "start": "2016-11-28",
+    "end": "2019-06-27",
+    "parties": ["V", "LA", "KF"],
+    "description": "Koalitionsregering bestående af Venstre, Liberal Alliance og Det Konservative Folkeparti."
+  },
+  {
+    "slug": "lars-lokke-rasmussen-ii",
+    "name": "Lars Løkke Rasmussen II",
+    "type": "Etpartiregering",
+    "start": "2015-06-28",
+    "end": "2016-11-28",
+    "parties": ["V"],
+    "description": "Etpartiregering bestående af Venstre."
+  },
+  {
+    "slug": "helle-thorning-schmidt-ii",
+    "name": "Helle Thorning-Schmidt II",
+    "type": "Koalitionsregering",
+    "start": "2014-02-03",
+    "end": "2015-06-28",
+    "parties": ["S", "RV"],
+    "description": "Koalitionsregering bestående af Socialdemokratiet og Radikale Venstre."
+  }
+]

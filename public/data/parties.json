@@ -1,0 +1,128 @@
+[
+  {
+    "short": "EL",
+    "letter": "Ø",
+    "navn": "Enhedslisten",
+    "color": "#B81E50",
+    "left_order": 0
+  },
+  {
+    "short": "SF",
+    "letter": "F",
+    "navn": "SF – Socialistisk Folkeparti",
+    "color": "#E64949",
+    "left_order": 1
+  },
+  {
+    "short": "ALT",
+    "letter": "Å",
+    "navn": "Alternativet",
+    "color": "#2DAF59",
+    "left_order": 2
+  },
+  {
+    "short": "RV",
+    "letter": "B",
+    "navn": "Radikale Venstre",
+    "color": "#E5358F",
+    "left_order": 3
+  },
+  {
+    "short": "S",
+    "letter": "A",
+    "navn": "Socialdemokratiet",
+    "color": "#E3002D",
+    "left_order": 4
+  },
+  {
+    "short": "M",
+    "letter": "M",
+    "navn": "Moderaterne",
+    "color": "#4B215C",
+    "left_order": 5
+  },
+  {
+    "short": "V",
+    "letter": "V",
+    "navn": "Venstre",
+    "color": "#002F87",
+    "left_order": 6
+  },
+  {
+    "short": "KF",
+    "letter": "C",
+    "navn": "Det Konservative Folkeparti",
+    "color": "#003E2C",
+    "left_order": 7
+  },
+  {
+    "short": "DF",
+    "letter": "O",
+    "navn": "Dansk Folkeparti",
+    "color": "#C8102E",
+    "left_order": 8
+  },
+  {
+    "short": "LA",
+    "letter": "I",
+    "navn": "Liberal Alliance",
+    "color": "#181818",
+    "left_order": 9
+  },
+  {
+    "short": "DD",
+    "letter": "Æ",
+    "navn": "Danmarksdemokraterne",
+    "color": "#15294C",
+    "left_order": 10
+  },
+  {
+    "short": "NB",
+    "letter": "D",
+    "navn": "Nye Borgerlige",
+    "color": "#1C4F8C",
+    "left_order": 11
+  },
+  {
+    "short": "IA",
+    "letter": "IA",
+    "navn": "Inuit Ataqatigiit",
+    "color": "#006EB5",
+    "left_order": 12
+  },
+  {
+    "short": "BP",
+    "letter": "BP",
+    "navn": "Borgernes Parti",
+    "color": "#2872D4",
+    "left_order": 13
+  },
+  {
+    "short": "JF",
+    "letter": "JF",
+    "navn": "Javnaðarflokkurin",
+    "color": "#E07B00",
+    "left_order": 14
+  },
+  {
+    "short": "N",
+    "letter": "N",
+    "navn": "Nationalisterne",
+    "color": "#1A1A1A",
+    "left_order": 15
+  },
+  {
+    "short": "SP",
+    "letter": "SP",
+    "navn": "Sambandsflokkurin",
+    "color": "#5C6B47",
+    "left_order": 16
+  },
+  {
+    "short": "UFG",
+    "letter": "—",
+    "navn": "Uden for grupper",
+    "color": "#888888",
+    "left_order": 17
+  }
+]
