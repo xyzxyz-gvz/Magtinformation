@@ -21,3 +21,6 @@ pipeline/logs/
 .vscode/
 .idea/
 .DS_Store
+
+# Claude
+.claude/
