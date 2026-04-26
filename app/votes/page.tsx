@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { CaseTypeBadge, classifyCase } from "@/components/CaseTypeBadge";
+import { EmptyState } from "@/components/EmptyState";
+import { VoteBar } from "@/components/VoteBar";
 import { VotesFilter } from "@/components/VotesFilter";
 import { getGovernments, getVotesList } from "@/lib/data";
 import { getGovernmentForDate } from "@/lib/governments";
@@ -13,6 +16,7 @@ export default async function VotesIndex({
     gov?: string;
     outcome?: string;
     topic?: string;
+    kind?: string;
     q?: string;
   }>;
 }) {
@@ -21,6 +25,7 @@ export default async function VotesIndex({
   const govSlug = sp.gov ?? "";
   const outcome = sp.outcome ?? "";
   const topic = sp.topic ?? "";
+  const kind = sp.kind ?? "";
   const q = (sp.q ?? "").trim();
 
   const [governments, votes] = await Promise.all([
@@ -50,6 +55,16 @@ export default async function VotesIndex({
   if (outcome === "passed") filtered = filtered.filter((v) => v.vedtaget);
   if (outcome === "rejected") filtered = filtered.filter((v) => !v.vedtaget);
   if (topic) filtered = filtered.filter((v) => (v.topics ?? []).includes(topic));
+  if (kind) {
+    filtered = filtered.filter((v) => {
+      const k = classifyCase(v.caseNummer, v.caseTitel);
+      if (kind === "L") return k === "Lovforslag";
+      if (kind === "B") return k === "Beslutningsforslag";
+      if (kind === "V") return k === "Forslag til vedtagelse";
+      if (kind === "Borger") return k === "Borgerforslag";
+      return true;
+    });
+  }
   if (q) {
     const needle = q.toLowerCase();
     filtered = filtered.filter((v) => {
@@ -68,6 +83,7 @@ export default async function VotesIndex({
     if (govSlug) params.set("gov", govSlug);
     if (outcome) params.set("outcome", outcome);
     if (topic) params.set("topic", topic);
+    if (kind) params.set("kind", kind);
     if (q) params.set("q", q);
     for (const [k, v] of Object.entries(overrides)) {
       if (v) params.set(k, v);
@@ -92,11 +108,15 @@ export default async function VotesIndex({
         govSlug={govSlug}
         outcome={outcome}
         topic={topic}
+        kind={kind}
         q={q}
       />
 
       {slice.length === 0 ? (
-        <p className="text-sm text-[var(--color-muted)]">Ingen afstemninger.</p>
+        <EmptyState
+          title="Ingen afstemninger matcher filtrene"
+          body="Prøv at vælge en anden regering, et andet emne eller en anden søgetekst."
+        />
       ) : (
         <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
           {slice.map((v) => {
@@ -105,11 +125,17 @@ export default async function VotesIndex({
               <li key={v.id}>
                 <Link
                   href={`/votes/${v.id}`}
-                  className="flex items-baseline justify-between gap-6 py-3 hover:bg-[var(--color-soft)]"
+                  className="flex items-center gap-4 py-3 hover:bg-[var(--color-soft)]"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm">
-                      {v.caseTitel ?? v.konklusion ?? `Afstemning #${v.id}`}
+                    <div className="flex items-baseline gap-2">
+                      <CaseTypeBadge
+                        caseNummer={v.caseNummer}
+                        caseTitel={v.caseTitel}
+                      />
+                      <span className="truncate text-sm">
+                        {v.caseTitel ?? v.konklusion ?? `Afstemning #${v.id}`}
+                      </span>
                     </div>
                     <div className="mt-0.5 text-xs text-[var(--color-muted)]">
                       {govForVote?.name ?? "—"} ·{" "}
@@ -119,11 +145,24 @@ export default async function VotesIndex({
                         }
                       >
                         {v.vedtaget ? "Vedtaget" : "Forkastet"}
-                      </span>{" "}
-                      · {v.forCount} for / {v.imodCount} imod
+                      </span>
+                      {v.type && v.type !== "Endelig vedtagelse" && (
+                        <>
+                          {" · "}
+                          <span>{v.type.toLowerCase()}</span>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <div className="shrink-0 text-sm tabular-nums text-[var(--color-muted)]">
+                  <div className="hidden shrink-0 sm:block">
+                    <VoteBar
+                      forCount={v.forCount}
+                      imodCount={v.imodCount}
+                      hverkenCount={v.hverkenCount}
+                      fraværCount={v.fraværCount}
+                    />
+                  </div>
+                  <div className="shrink-0 text-xs tabular-nums text-[var(--color-muted)]">
                     {v.dato}
                   </div>
                 </Link>

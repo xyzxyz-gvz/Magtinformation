@@ -15,6 +15,7 @@ public/data/*.json
 !public/data/parties.json
 public/data/meetings/
 public/data/member_votes/
+public/photos/
 pipeline/logs/
 
 # Editors / OS

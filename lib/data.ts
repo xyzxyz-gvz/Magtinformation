@@ -128,6 +128,39 @@ export const getVoteTopics = cache(
     readJSON("vote_topics.json", {} as Record<string, string[]>),
 );
 
+export type CaseTimelineStep = {
+  id: number;
+  titel: string | null;
+  dato: string | null;
+  typeid: number | null;
+};
+
+export const getCaseTimelines = cache(
+  (): Promise<Record<string, CaseTimelineStep[]>> =>
+    readJSON(
+      "case_timelines.json",
+      {} as Record<string, CaseTimelineStep[]>,
+    ),
+);
+
+export const getCaseTimeline = cache(
+  async (sagid: number | null): Promise<CaseTimelineStep[]> => {
+    if (!sagid) return [];
+    const all = await getCaseTimelines();
+    return all[String(sagid)] ?? [];
+  },
+);
+
+export type Meta = {
+  updated_at: string | null;
+  sources?: string[];
+};
+
+export const getMeta = cache(
+  (): Promise<Meta> =>
+    readJSON("meta.json", { updated_at: null } as Meta),
+);
+
 export const getMemberPartyHistory = cache(
   (): Promise<Record<string, MemberPartyHistory>> =>
     readJSON(

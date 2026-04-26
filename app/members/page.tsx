@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 import { MembersFilter } from "@/components/MembersFilter";
 import { PartyBadge } from "@/components/PartyBadge";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/lib/data";
 import type { Member } from "@/lib/types";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 25;
 
 const EDU_LABEL: Record<string, string> = {
   LVU: "LVU",
@@ -100,7 +101,7 @@ export default async function MembersIndex({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-baseline justify-between gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Medlemmer</h1>
           <p className="mt-2 text-sm text-[var(--color-muted)]">
@@ -109,12 +110,20 @@ export default async function MembersIndex({
             MF'er i alt i datasættet
           </p>
         </div>
-        <Link
-          href="/members/oprorere"
-          className="text-sm underline-offset-2 hover:underline"
-        >
-          Oprørere →
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/members?sort=deviation&status=current"
+            className="rounded-md border border-[var(--color-line)] px-3 py-1.5 text-xs no-underline hover:bg-[var(--color-soft)] hover:no-underline"
+          >
+            Oprørere
+          </Link>
+          <Link
+            href="/members/sammenlign"
+            className="rounded-md border border-[var(--color-line)] px-3 py-1.5 text-xs no-underline hover:bg-[var(--color-soft)] hover:no-underline"
+          >
+            Sammenlign to MF'er
+          </Link>
+        </div>
       </div>
 
       <MembersFilter
@@ -130,9 +139,10 @@ export default async function MembersIndex({
       />
 
       {slice.length === 0 ? (
-        <p className="rounded border border-dashed border-[var(--color-line)] p-6 text-sm text-[var(--color-muted)]">
-          Ingen MF'er matcher filtrene.
-        </p>
+        <EmptyState
+          title="Ingen MF'er matcher filtrene"
+          body="Prøv at fjerne et af filtrene — fx ved at skifte status til 'Alle (begge)' eller nulstille søgningen."
+        />
       ) : (
         <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
           {slice.map((m) => {
@@ -142,8 +152,21 @@ export default async function MembersIndex({
               <li key={m.id}>
                 <Link
                   href={`/members/${m.id}`}
-                  className="flex items-center gap-4 py-2.5 hover:bg-[var(--color-soft)]"
+                  className="flex items-center gap-3 py-2 hover:bg-[var(--color-soft)]"
                 >
+                  {m.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={m.photo}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-full border border-[var(--color-line)] object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-dashed border-[var(--color-line)] bg-[var(--color-soft)] text-xs text-[var(--color-muted)]">
+                      —
+                    </div>
+                  )}
                   <PartyBadge party={p} size="sm" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">

@@ -8,6 +8,7 @@ type Props = {
   parties: Party[];
   primaryCount: number;
   substituteCount: number;
+  isInterim?: boolean;
 };
 
 export function GovernmentStats({
@@ -16,6 +17,7 @@ export function GovernmentStats({
   parties,
   primaryCount,
   substituteCount,
+  isInterim = false,
 }: Props) {
   if (members.length === 0) return null;
 
@@ -48,6 +50,14 @@ export function GovernmentStats({
           Demografi nedenfor er beregnet på de {primaryCount} primære
           mandatholdere så stedfortrædere ikke skævvrider tallene.
         </p>
+        {isInterim && (
+          <p className="mt-2 max-w-3xl rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Bemærk: indtil der er afgivet stemmer i den nye samling med ny
+            partikonstellation, viser partifordelingen samme MF‑sæt som ved
+            slutningen af forrige regering. Tallene opdateres i takt med at
+            Folketingets nye sammensætning afspejles i stemmedataene.
+          </p>
+        )}
       </div>
 
       <DemographicStats

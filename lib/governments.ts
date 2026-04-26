@@ -1,4 +1,4 @@
-import type { Government } from "./types";
+import type { Government, MemberPartyHistory } from "./types";
 
 export function getGovernmentForDate(
   governments: Government[],
@@ -116,4 +116,40 @@ function finalizeBucket(b: GovernmentBucket): void {
   b.afvigelsePct = b.present
     ? Math.round((b.deviation / b.present) * 100)
     : null;
+}
+
+/**
+ * Resolve which folketingsgruppe an MF belonged to at the start of a given
+ * government period. Falls back to the earliest entry that overlaps the
+ * period (useful for stedfortrædere who joined mid-period). Returns null if
+ * no overlapping entry exists at all.
+ *
+ * Without this, partifordelingen pr. regering ender med at vise MF'ens
+ * NUVÆRENDE parti — så fx Moderaterne under Frederiksen II viser 12 i
+ * stedet for de 16 mandater partiet fik ved 2022-valget, fordi 4 MF'er
+ * har skiftet undervejs.
+ */
+export function partyAtPeriodStart(
+  history: MemberPartyHistory | undefined,
+  periodStart: string,
+  periodEnd: string | null,
+): string | null {
+  if (!history) return null;
+  const FAR_PAST = "0000-00-00";
+  const FAR_FUTURE = "9999-99-99";
+  const end = periodEnd ?? FAR_FUTURE;
+
+  // 1. Entry that contains the period start
+  for (const t of history.timeline) {
+    const s = t.start ?? FAR_PAST;
+    const e = t.end ?? FAR_FUTURE;
+    if (s <= periodStart && periodStart < e) return t.partyShort;
+  }
+  // 2. Else earliest entry that overlaps the period at all
+  for (const t of history.timeline) {
+    const s = t.start ?? FAR_PAST;
+    const e = t.end ?? FAR_FUTURE;
+    if (s < end && e > periodStart) return t.partyShort;
+  }
+  return null;
 }

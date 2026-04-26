@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Disclaimer } from "@/components/Disclaimer";
+import { HeaderMeta } from "@/components/HeaderMeta";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteNav } from "@/components/SiteNav";
 import { SiteSearch } from "@/components/SiteSearch";
 import "./globals.css";
 
@@ -19,31 +22,26 @@ export default function RootLayout({
     <html lang="da">
       <body className="min-h-screen">
         <Disclaimer />
-        <header className="border-b border-[var(--color-line)]">
-          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4">
-            <Link href="/" className="text-base font-semibold tracking-tight">
+        <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
+            <Link
+              href="/"
+              className="text-base font-semibold tracking-tight no-underline hover:no-underline"
+              aria-label="Til forsiden"
+            >
               Magtinformation
             </Link>
-            <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-[var(--color-muted)]">
-              <Link href="/">Forside</Link>
-              <Link href="/votes">Afstemninger</Link>
-              <Link href="/topics">Emner</Link>
-              <Link href="/parties">Partier</Link>
-              <Link href="/members">Medlemmer</Link>
-              <Link href="/partiskiftere">Partiskiftere</Link>
-              <Link href="/analyse">Analyse</Link>
-            </nav>
-            <div className="ml-auto">
-              <SiteSearch />
+            <SiteNav />
+            <div className="ml-auto flex w-full items-center gap-4 sm:w-auto">
+              <HeaderMeta />
+              <div className="w-full sm:w-auto">
+                <SiteSearch />
+              </div>
             </div>
           </div>
         </header>
         <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
-        <footer className="mt-20 border-t border-[var(--color-line)] py-6">
-          <div className="mx-auto max-w-5xl px-6 text-xs text-[var(--color-muted)]">
-            Data fra Folketingets åbne data — oda.ft.dk
-          </div>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

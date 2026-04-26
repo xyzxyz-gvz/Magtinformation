@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CaseTimeline } from "@/components/CaseTimeline";
+import { CaseTypeBadge } from "@/components/CaseTypeBadge";
 import { VoteBreakdown } from "@/components/VoteBreakdown";
 import {
   getCaseSummary,
+  getCaseTimeline,
   getEnrichedVote,
   getGovernments,
   getMembers,
@@ -32,6 +35,7 @@ export default async function VoteDetail({
   if (!vote) notFound();
 
   const caseSummary = await getCaseSummary(vote.sagstrinid);
+  const timeline = await getCaseTimeline(caseSummary?.sagid ?? null);
 
   const government = getGovernmentForDate(governments, vote.dato);
   const total =
@@ -43,7 +47,19 @@ export default async function VoteDetail({
         <Link href="/votes" className="text-sm text-[var(--color-muted)]">
           ← Afstemninger
         </Link>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <CaseTypeBadge
+            caseNummer={vote.caseNummer}
+            caseTitel={vote.caseTitel}
+            size="md"
+          />
+          {vote.caseNummer && (
+            <span className="text-sm tabular-nums text-[var(--color-muted)]">
+              {vote.caseNummer}
+            </span>
+          )}
+        </div>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
           {vote.caseTitel ?? vote.konklusion ?? `Afstemning #${vote.id}`}
         </h1>
         {caseSummary?.titelkort &&
@@ -60,18 +76,6 @@ export default async function VoteDetail({
               ? `${vote.type ?? "Afstemning"} (${caseSummary.stepTitel})`
               : vote.type ?? "Afstemning"}
           </span>
-          {vote.caseNummer && (
-            <>
-              <span>·</span>
-              <span className="tabular-nums">{vote.caseNummer}</span>
-            </>
-          )}
-          {caseSummary?.sagstype && (
-            <>
-              <span>·</span>
-              <span>{caseSummary.sagstype}</span>
-            </>
-          )}
           {government && (
             <>
               <span>·</span>
@@ -143,6 +147,23 @@ export default async function VoteDetail({
               </a>
             )}
           </div>
+        </section>
+      )}
+
+      {timeline.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Sagens forløb
+          </h2>
+          <p className="mb-3 max-w-2xl text-xs text-[var(--color-muted)]">
+            Tidslinje over sagens behandlingsskridt fra fremsættelse til
+            endelig vedtagelse eller forkastelse. Den fremhævede række er
+            skridtet denne afstemning hører til.
+          </p>
+          <CaseTimeline
+            timeline={timeline}
+            highlightStepId={vote.sagstrinid}
+          />
         </section>
       )}
 

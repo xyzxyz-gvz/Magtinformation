@@ -151,7 +151,7 @@ export function SiteSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-44 sm:w-64">
+    <div ref={containerRef} className="relative w-full sm:w-64">
       <input
         ref={inputRef}
         type="search"
@@ -171,7 +171,7 @@ export function SiteSearch() {
       />
       {open && query.trim() && hits.length > 0 && (
         <ul
-          className="absolute right-0 z-30 mt-1 max-h-96 w-[28rem] max-w-[calc(100vw-2rem)] overflow-auto rounded-md border border-[var(--color-line)] bg-white py-1 shadow-lg"
+          className="absolute right-0 z-30 mt-1 max-h-96 w-full overflow-auto rounded-md border border-[var(--color-line)] bg-white py-1 shadow-lg sm:w-[28rem]"
           role="listbox"
         >
           {hits.map((h, i) => {

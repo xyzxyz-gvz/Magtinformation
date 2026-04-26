@@ -178,6 +178,7 @@ export function DemographicStats({
           title="Partifordeling"
           coverage={members.length}
           total={members.length}
+          hint="MF'er er talt under det parti de tilhørte ved regeringens start (matcher mandattallene fra valget). Senere partiskift mellem MF'er er ikke afspejlet her."
         >
           <Bars rows={partyRows} />
         </Panel>

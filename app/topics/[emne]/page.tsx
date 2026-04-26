@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CaseTypeBadge } from "@/components/CaseTypeBadge";
 import {
   getParties,
   getVoteMajorities,
@@ -228,8 +229,14 @@ function VoteRow({ v }: { v: Vote }) {
         className="flex items-baseline justify-between gap-6 py-2 hover:bg-[var(--color-soft)]"
       >
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm">
-            {v.caseTitel ?? v.konklusion ?? `Afstemning #${v.id}`}
+          <div className="flex items-baseline gap-2">
+            <CaseTypeBadge
+              caseNummer={v.caseNummer}
+              caseTitel={v.caseTitel}
+            />
+            <span className="truncate text-sm">
+              {v.caseTitel ?? v.konklusion ?? `Afstemning #${v.id}`}
+            </span>
           </div>
           <div className="mt-0.5 text-xs text-[var(--color-muted)]">
             <span className={v.vedtaget ? "text-emerald-700" : "text-rose-700"}>

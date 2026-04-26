@@ -1892,6 +1892,42 @@ def main() -> None:
     )
     print(f"  → vote_topics.json ({len(vote_topics)} votes with topics)")
 
+    # Per-sag timelines — used by the timeline section on /votes/[id].
+    print("\nBuilding case timelines…")
+    needed_sagids: set[int] = set()
+    for v in votes_list:
+        stid = v.get("sagstrinid")
+        if stid:
+            sid = sagstrin_to_sagid.get(stid)
+            if sid:
+                needed_sagids.add(sid)
+
+    timelines: dict[str, list[dict]] = {}
+    if case_steps:
+        steps_by_sag: dict[int, list[dict]] = defaultdict(list)
+        for s in case_steps:
+            sid = s.get("sagid")
+            if sid in needed_sagids:
+                steps_by_sag[sid].append(s)
+        for sid, lst in steps_by_sag.items():
+            lst_sorted = sorted(lst, key=lambda x: (x.get("dato") or ""))
+            timelines[str(sid)] = [
+                {
+                    "id": s["id"],
+                    "titel": s.get("titel"),
+                    "dato": (s.get("dato") or "")[:10] or None,
+                    "typeid": s.get("typeid"),
+                }
+                for s in lst_sorted
+            ]
+    (DATA_DIR / "case_timelines.json").write_text(
+        json.dumps(timelines, ensure_ascii=False), encoding="utf-8",
+    )
+    total_steps = sum(len(v) for v in timelines.values())
+    print(
+        f"  → case_timelines.json ({len(timelines)} cases, {total_steps} steps)"
+    )
+
     print("\nBuilding search index…")
     topic_counts: dict[str, int] = {}
     for ts in vote_topics.values():

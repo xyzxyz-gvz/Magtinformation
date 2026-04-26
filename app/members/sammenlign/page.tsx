@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CompareMemberPicker } from "@/components/CompareMemberPicker";
+import { EmptyState } from "@/components/EmptyState";
 import { PartyBadge } from "@/components/PartyBadge";
 import {
   getMember,
@@ -59,13 +60,12 @@ export default async function ComparePage({
       />
 
       {!haveBoth ? (
-        <p className="rounded border border-dashed border-[var(--color-line)] p-6 text-sm text-[var(--color-muted)]">
-          Vælg to forskellige MF'er ovenfor.
-        </p>
+        <EmptyState
+          title="Vælg to MF'er at sammenligne"
+          body="Brug felterne ovenfor — du kan søge på navn. Sammenligningen viser fælles afstemninger, hvor enige de stemte, og en liste over de afstemninger de var uenige om."
+        />
       ) : !memberA || !memberB ? (
-        <p className="rounded border border-dashed border-[var(--color-line)] p-6 text-sm text-[var(--color-muted)]">
-          Den ene MF kunne ikke findes.
-        </p>
+        <EmptyState title="Den ene MF kunne ikke findes" />
       ) : (
         <Comparison
           a={memberA}

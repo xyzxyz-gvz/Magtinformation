@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CaseTypeBadge } from "@/components/CaseTypeBadge";
 import { getGovernments, getVotesList } from "@/lib/data";
 import { getGovernmentForDate } from "@/lib/governments";
 import type { Vote } from "@/lib/types";
@@ -153,8 +154,14 @@ function Section({
                 className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-4 gap-y-1 py-2.5 hover:bg-[var(--color-soft)]"
               >
                 <div className="min-w-0">
-                  <div className="truncate text-sm">
-                    {v.caseTitel ?? v.konklusion ?? `Afstemning #${v.id}`}
+                  <div className="flex items-baseline gap-2">
+                    <CaseTypeBadge
+                      caseNummer={v.caseNummer}
+                      caseTitel={v.caseTitel}
+                    />
+                    <span className="truncate text-sm">
+                      {v.caseTitel ?? v.konklusion ?? `Afstemning #${v.id}`}
+                    </span>
                   </div>
                   <div className="mt-0.5 text-xs text-[var(--color-muted)]">
                     <span

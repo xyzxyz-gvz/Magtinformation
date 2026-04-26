@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "magtinformation:disclaimer-accepted-v1";
 
 export function Disclaimer() {
   const [open, setOpen] = useState(false);
+  const acceptRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
@@ -15,6 +17,19 @@ export function Disclaimer() {
       setOpen(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (open) acceptRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   const accept = () => {
     try {
@@ -66,19 +81,24 @@ export function Disclaimer() {
               >
                 ft.dk
               </a>{" "}
-              før du citerer dem offentligt.
+              før du citerer dem offentligt. Detaljer om metoden og hvilke
+              antagelser hvert tal hviler på finder du på{" "}
+              <Link href="/om" className="underline underline-offset-2">
+                om‑siden
+              </Link>
+              .
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
-            <a
-              href="https://oda.ft.dk"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href="/om"
               className="text-xs text-[var(--color-muted)] underline-offset-2 hover:underline"
+              onClick={accept}
             >
-              Om dataet (oda.ft.dk)
-            </a>
+              Læs metode og privatliv
+            </Link>
             <button
+              ref={acceptRef}
               type="button"
               onClick={accept}
               className="rounded-md bg-[var(--color-ink)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"

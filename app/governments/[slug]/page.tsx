@@ -5,11 +5,16 @@ import { PartyBadge } from "@/components/PartyBadge";
 import {
   getGovernmentMembers,
   getGovernments,
+  getMemberPartyHistory,
   getMembers,
   getParties,
   getVotesList,
 } from "@/lib/data";
-import { formatDate, formatDateRange } from "@/lib/governments";
+import {
+  formatDate,
+  formatDateRange,
+  partyAtPeriodStart,
+} from "@/lib/governments";
 
 export async function generateStaticParams() {
   const governments = await getGovernments();
@@ -22,13 +27,14 @@ export default async function GovernmentPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [governments, parties, votes, members, govMembersMap] =
+  const [governments, parties, votes, members, govMembersMap, partyHistory] =
     await Promise.all([
       getGovernments(),
       getParties(),
       getVotesList(),
       getMembers(),
       getGovernmentMembers(),
+      getMemberPartyHistory(),
     ]);
   const government = governments.find((g) => g.slug === slug);
   if (!government) notFound();
@@ -47,16 +53,29 @@ export default async function GovernmentPage({
 
   const memberById = new Map(members.map((m) => [m.id, m]));
   const govMemberRows = govMembersMap[government.slug] ?? [];
+  // Replace each MF's current partyShort with the party they belonged to at
+  // the *start* of this government period. Otherwise partifordeling pr.
+  // regering ender med at vise nutidens parti — som forvrider mandattal
+  // for partier hvor MF'er er skiftet undervejs (Moderaterne ↘, DD ↗ etc).
   const govMembers = govMemberRows
     .map((row) => {
       const m = memberById.get(row.id);
-      return m ? { ...m, govVotes: row.votes } : null;
+      if (!m) return null;
+      const periodParty = partyAtPeriodStart(
+        partyHistory[String(m.id)],
+        government.start,
+        government.end,
+      );
+      return {
+        ...m,
+        partyShort: periodParty ?? m.partyShort,
+        govVotes: row.votes,
+      };
     })
     .filter((m): m is NonNullable<typeof m> => Boolean(m));
   const SEATS = 179;
   const primaryCount = Math.min(SEATS, govMembers.length);
   const substituteCount = Math.max(0, govMembers.length - primaryCount);
-  const isInterim = !government.end && government.start >= "2026-03-24";
 
   return (
     <div className="space-y-10">
@@ -96,21 +115,6 @@ export default async function GovernmentPage({
         <Stat label="Vedtaget" value={`${passed.toLocaleString("da-DK")}`} />
         <Stat label="Vedtaget-rate" value={`${passRate}%`} />
       </div>
-
-      {isInterim && (
-        <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
-          <strong>Bemærk:</strong> Folketingsvalget den 24. marts 2026 har
-          afgjort hvem der sidder de 179 sæder — du kan se{" "}
-          <Link
-            href="/members?currentMF=1"
-            className="underline underline-offset-2"
-          >
-            de nye medlemmer her
-          </Link>
-          . Selve regeringen er endnu under dannelse, så koalitionspartier og
-          ministerposter er ikke fastlagt.
-        </div>
-      )}
 
       <GovernmentStats
         government={government}

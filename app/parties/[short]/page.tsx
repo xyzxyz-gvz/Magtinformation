@@ -3,11 +3,16 @@ import { notFound } from "next/navigation";
 import { DemographicStats } from "@/components/DemographicStats";
 import { PartyBadge } from "@/components/PartyBadge";
 import {
+  PartyVotesExplorer,
+  type PartyVoteRow,
+} from "@/components/PartyVotesExplorer";
+import {
   getGovernments,
   getMembers,
   getParties,
   getPartyAgreement,
   getVoteMajorities,
+  getVoteTopics,
   getVotesList,
 } from "@/lib/data";
 import { formatDateRange } from "@/lib/governments";
@@ -40,7 +45,7 @@ export default async function PartyDetail({
   params: Promise<{ short: string }>;
 }) {
   const { short } = await params;
-  const [parties, members, governments, votes, majorities, agreement] =
+  const [parties, members, governments, votes, majorities, agreement, voteTopics] =
     await Promise.all([
       getParties(),
       getMembers(),
@@ -48,6 +53,7 @@ export default async function PartyDetail({
       getVotesList(),
       getVoteMajorities(),
       getPartyAgreement(),
+      getVoteTopics(),
     ]);
 
   const party = parties.find((p) => p.short === short);
@@ -97,6 +103,69 @@ export default async function PartyDetail({
       furthest = [...rows].sort((a, b) => a.agreement - b.agreement).slice(0, 5);
     }
   }
+
+  // Per-topic stance: how often did this party's flertal stemme for/imod/hverken
+  // when an emneord var knyttet til afstemningen.
+  const TOPIC_MIN_VOTES = 5;
+  type TopicStance = {
+    topic: string;
+    for: number;
+    imod: number;
+    hverken: number;
+    total: number;
+  };
+  const topicStanceMap = new Map<string, TopicStance>();
+  for (const v of votes) {
+    const partyMaj = majorities[String(v.id)]?.[short];
+    if (!partyMaj) continue;
+    const ts = voteTopics[String(v.id)];
+    if (!ts || ts.length === 0) continue;
+    for (const t of ts) {
+      const row = topicStanceMap.get(t) ?? {
+        topic: t,
+        for: 0,
+        imod: 0,
+        hverken: 0,
+        total: 0,
+      };
+      if (partyMaj === 1) row.for++;
+      else if (partyMaj === 2) row.imod++;
+      else if (partyMaj === 4) row.hverken++;
+      row.total++;
+      topicStanceMap.set(t, row);
+    }
+  }
+  const topicStanceAll = [...topicStanceMap.values()].filter(
+    (r) => r.total >= TOPIC_MIN_VOTES,
+  );
+  const topicByVolume = [...topicStanceAll]
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 12);
+  const topicMostFor = [...topicStanceAll]
+    .filter((r) => r.total >= 10)
+    .sort((a, b) => b.for / b.total - a.for / a.total)
+    .slice(0, 5);
+  const topicMostImod = [...topicStanceAll]
+    .filter((r) => r.total >= 10)
+    .sort((a, b) => b.imod / b.total - a.imod / a.total)
+    .slice(0, 5);
+
+  // Build per-vote rows annotated with party stance for the PartyVotesExplorer.
+  // Sorted newest first so the default "Alle" tab shows recent activity.
+  const partyVoteRows: PartyVoteRow[] = [];
+  for (const v of votes) {
+    const stance = majorities[String(v.id)]?.[short];
+    if (stance !== 1 && stance !== 2 && stance !== 4) continue;
+    partyVoteRows.push({
+      id: v.id,
+      d: v.dato,
+      v: !!v.vedtaget,
+      ct: v.caseTitel,
+      cn: v.caseNummer,
+      s: stance,
+    });
+  }
+  partyVoteRows.sort((a, b) => b.d.localeCompare(a.d));
 
   return (
     <div className="space-y-10">
@@ -224,6 +293,99 @@ export default async function PartyDetail({
         )}
       </section>
 
+      {topicByVolume.length > 0 && (
+        <section className="space-y-6">
+          <div>
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              Stemmer pr. emne
+            </h2>
+            <p className="mt-1 max-w-2xl text-xs text-[var(--color-muted)]">
+              Hvordan {party.navn}s flertal stemte fordelt på emneord. Kun
+              emner hvor partiet har stemt mindst {TOPIC_MIN_VOTES} gange er
+              med.
+            </p>
+          </div>
+
+          {(topicMostFor.length > 0 || topicMostImod.length > 0) && (
+            <div className="grid gap-6 md:grid-cols-2">
+              {topicMostFor.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-emerald-700">
+                    Mest stemt for
+                  </h3>
+                  <ul className="space-y-1.5">
+                    {topicMostFor.map((r) => (
+                      <TopicRow
+                        key={r.topic}
+                        topic={r.topic}
+                        forCount={r.for}
+                        imodCount={r.imod}
+                        hverkenCount={r.hverken}
+                        total={r.total}
+                        partyShort={short}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {topicMostImod.length > 0 && (
+                <div>
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-rose-700">
+                    Mest stemt imod
+                  </h3>
+                  <ul className="space-y-1.5">
+                    {topicMostImod.map((r) => (
+                      <TopicRow
+                        key={r.topic}
+                        topic={r.topic}
+                        forCount={r.for}
+                        imodCount={r.imod}
+                        hverkenCount={r.hverken}
+                        total={r.total}
+                        partyShort={short}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div>
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              Hyppigste emner
+            </h3>
+            <ul className="space-y-1.5">
+              {topicByVolume.map((r) => (
+                <TopicRow
+                  key={r.topic}
+                  topic={r.topic}
+                  forCount={r.for}
+                  imodCount={r.imod}
+                  hverkenCount={r.hverken}
+                  total={r.total}
+                  partyShort={short}
+                />
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {partyVoteRows.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Alle stemmer
+          </h2>
+          <p className="mb-4 max-w-2xl text-xs text-[var(--color-muted)]">
+            Alle afstemninger hvor {party.navn}s flertal har taget stilling.
+            Skift mellem fanerne for at se hvad partiet har stemt for, imod
+            eller hverken for/imod.
+          </p>
+          <PartyVotesExplorer votes={partyVoteRows} partyName={party.navn} />
+        </section>
+      )}
+
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
           Medlemmer pr. regering
@@ -297,6 +459,47 @@ function GovernmentBlock({
         ))}
       </ul>
     </div>
+  );
+}
+
+function TopicRow({
+  topic,
+  forCount,
+  imodCount,
+  hverkenCount,
+  total,
+  partyShort,
+}: {
+  topic: string;
+  forCount: number;
+  imodCount: number;
+  hverkenCount: number;
+  total: number;
+  partyShort: string;
+}) {
+  const fp = total ? Math.round((forCount / total) * 100) : 0;
+  const ip = total ? Math.round((imodCount / total) * 100) : 0;
+  const hp = Math.max(0, 100 - fp - ip);
+  return (
+    <li>
+      <Link
+        href={`/topics/${encodeURIComponent(topic)}`}
+        className="block rounded px-2 py-1.5 hover:bg-[var(--color-soft)]"
+        title={`${partyShort}'s flertal: ${forCount} for · ${imodCount} imod · ${hverkenCount} hverken · ${total} i alt`}
+      >
+        <div className="flex items-baseline justify-between gap-3 text-sm">
+          <span className="truncate">{topic}</span>
+          <span className="shrink-0 text-xs tabular-nums text-[var(--color-muted)]">
+            {forCount}/{total}
+          </span>
+        </div>
+        <div className="mt-1 flex h-1.5 overflow-hidden rounded-full">
+          <div style={{ width: `${fp}%`, background: "#16a34a" }} />
+          <div style={{ width: `${ip}%`, background: "#dc2626" }} />
+          <div style={{ width: `${hp}%`, background: "#eab308" }} />
+        </div>
+      </Link>
+    </li>
   );
 }
 
