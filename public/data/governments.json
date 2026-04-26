@@ -1,12 +1,21 @@
 [
   {
+    "slug": "regering-under-dannelse-2026",
+    "name": "Regering under dannelse",
+    "type": "Forretningsregering",
+    "start": "2026-03-24",
+    "end": null,
+    "parties": [],
+    "description": "Folketingsvalg afholdt 24. marts 2026. Mette Frederiksen II fortsætter som forretningsregering indtil en ny regering er dannet. Sammensætningen er endnu ikke kendt."
+  },
+  {
     "slug": "mette-frederiksen-ii",
     "name": "Mette Frederiksen II",
     "type": "Flertalsregering",
     "start": "2022-12-15",
-    "end": null,
+    "end": "2026-03-24",
     "parties": ["S", "V", "M"],
-    "description": "Flertalsregering bestående af Socialdemokratiet, Venstre og Moderaterne (SVM-regering)."
+    "description": "Flertalsregering bestående af Socialdemokratiet, Venstre og Moderaterne (SVM-regering). Sad indtil folketingsvalget den 24. marts 2026."
   },
   {
     "slug": "mette-frederiksen-i",

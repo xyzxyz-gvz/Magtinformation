@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DemographicStats } from "@/components/DemographicStats";
 import { PartyBadge } from "@/components/PartyBadge";
 import {
   getGovernments,
   getMembers,
   getParties,
+  getPartyAgreement,
   getVoteMajorities,
   getVotesList,
 } from "@/lib/data";
@@ -38,16 +40,19 @@ export default async function PartyDetail({
   params: Promise<{ short: string }>;
 }) {
   const { short } = await params;
-  const [parties, members, governments, votes, majorities] = await Promise.all([
-    getParties(),
-    getMembers(),
-    getGovernments(),
-    getVotesList(),
-    getVoteMajorities(),
-  ]);
+  const [parties, members, governments, votes, majorities, agreement] =
+    await Promise.all([
+      getParties(),
+      getMembers(),
+      getGovernments(),
+      getVotesList(),
+      getVoteMajorities(),
+      getPartyAgreement(),
+    ]);
 
   const party = parties.find((p) => p.short === short);
   if (!party) notFound();
+  const partyByShort = new Map(parties.map((p) => [p.short, p]));
 
   const currentMembers = membersDuring(members, short, null);
   const partyMembers = members.filter((m) => m.partyShort === short);
@@ -69,6 +74,29 @@ export default async function PartyDetail({
   const cohesionPct = partyVoteCounts.total
     ? Math.round((cohesionDenominator / partyVoteCounts.total) * 100)
     : null;
+
+  // Closest / most-distant parties from the agreement matrix
+  type Allyrow = {
+    short: string;
+    agreement: number;
+    shared: number;
+  };
+  let closest: Allyrow[] = [];
+  let furthest: Allyrow[] = [];
+  if (agreement) {
+    const i = agreement.parties.indexOf(short);
+    if (i >= 0) {
+      const rows: Allyrow[] = agreement.parties
+        .map((p, j) => ({
+          short: p,
+          agreement: agreement.matrix[i][j] ?? 0,
+          shared: agreement.shared[i][j] ?? 0,
+        }))
+        .filter((r) => r.short !== short && r.shared >= 200);
+      closest = [...rows].sort((a, b) => b.agreement - a.agreement).slice(0, 5);
+      furthest = [...rows].sort((a, b) => a.agreement - b.agreement).slice(0, 5);
+    }
+  }
 
   return (
     <div className="space-y-10">
@@ -108,6 +136,82 @@ export default async function PartyDetail({
           }
         />
       </div>
+
+      {currentMembers.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Demografi · nuværende MF'er
+          </h2>
+          <DemographicStats
+            members={currentMembers}
+            refDate={new Date().toISOString().slice(0, 10)}
+            showParty={false}
+          />
+        </section>
+      )}
+
+      {(closest.length > 0 || furthest.length > 0) && (
+        <section className="grid gap-6 md:grid-cols-2">
+          <div>
+            <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              Stemmer mest med
+            </h2>
+            <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+              {closest.map((r) => {
+                const p = partyByShort.get(r.short);
+                return (
+                  <li key={r.short}>
+                    <Link
+                      href={`/parties/${r.short}`}
+                      className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <PartyBadge party={p} size="sm" />
+                        <span className="text-sm">{p?.navn ?? r.short}</span>
+                      </div>
+                      <div className="text-sm tabular-nums">
+                        {(r.agreement * 100).toFixed(1)}%
+                        <span className="ml-1 text-xs text-[var(--color-muted)]">
+                          / {r.shared.toLocaleString("da-DK")}
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div>
+            <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              Stemmer mindst med
+            </h2>
+            <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+              {furthest.map((r) => {
+                const p = partyByShort.get(r.short);
+                return (
+                  <li key={r.short}>
+                    <Link
+                      href={`/parties/${r.short}`}
+                      className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <PartyBadge party={p} size="sm" />
+                        <span className="text-sm">{p?.navn ?? r.short}</span>
+                      </div>
+                      <div className="text-sm tabular-nums">
+                        {(r.agreement * 100).toFixed(1)}%
+                        <span className="ml-1 text-xs text-[var(--color-muted)]">
+                          / {r.shared.toLocaleString("da-DK")}
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">

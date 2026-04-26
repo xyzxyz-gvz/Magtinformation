@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { GovernmentStats } from "@/components/GovernmentStats";
 import { PartyBadge } from "@/components/PartyBadge";
-import { getGovernments, getParties, getVotesList } from "@/lib/data";
+import {
+  getGovernmentMembers,
+  getGovernments,
+  getMembers,
+  getParties,
+  getVotesList,
+} from "@/lib/data";
 import { formatDate, formatDateRange } from "@/lib/governments";
 
 export async function generateStaticParams() {
@@ -15,11 +22,14 @@ export default async function GovernmentPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [governments, parties, votes] = await Promise.all([
-    getGovernments(),
-    getParties(),
-    getVotesList(),
-  ]);
+  const [governments, parties, votes, members, govMembersMap] =
+    await Promise.all([
+      getGovernments(),
+      getParties(),
+      getVotesList(),
+      getMembers(),
+      getGovernmentMembers(),
+    ]);
   const government = governments.find((g) => g.slug === slug);
   if (!government) notFound();
 
@@ -34,6 +44,19 @@ export default async function GovernmentPage({
   const passRate = periodVotes.length
     ? Math.round((passed / periodVotes.length) * 100)
     : 0;
+
+  const memberById = new Map(members.map((m) => [m.id, m]));
+  const govMemberRows = govMembersMap[government.slug] ?? [];
+  const govMembers = govMemberRows
+    .map((row) => {
+      const m = memberById.get(row.id);
+      return m ? { ...m, govVotes: row.votes } : null;
+    })
+    .filter((m): m is NonNullable<typeof m> => Boolean(m));
+  const SEATS = 179;
+  const primaryCount = Math.min(SEATS, govMembers.length);
+  const substituteCount = Math.max(0, govMembers.length - primaryCount);
+  const isInterim = !government.end && government.start >= "2026-03-24";
 
   return (
     <div className="space-y-10">
@@ -73,6 +96,29 @@ export default async function GovernmentPage({
         <Stat label="Vedtaget" value={`${passed.toLocaleString("da-DK")}`} />
         <Stat label="Vedtaget-rate" value={`${passRate}%`} />
       </div>
+
+      {isInterim && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+          <strong>Bemærk:</strong> Folketingsvalget den 24. marts 2026 har
+          afgjort hvem der sidder de 179 sæder — du kan se{" "}
+          <Link
+            href="/members?currentMF=1"
+            className="underline underline-offset-2"
+          >
+            de nye medlemmer her
+          </Link>
+          . Selve regeringen er endnu under dannelse, så koalitionspartier og
+          ministerposter er ikke fastlagt.
+        </div>
+      )}
+
+      <GovernmentStats
+        government={government}
+        members={govMembers}
+        parties={parties}
+        primaryCount={primaryCount}
+        substituteCount={substituteCount}
+      />
 
       <section>
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">

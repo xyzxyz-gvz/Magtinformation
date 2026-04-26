@@ -37,6 +37,10 @@ export type Member = {
   firstVoteDate: string | null;
   lastVoteDate: string | null;
   tags: string[];
+  sex: string | null;
+  born: string | null;
+  educationStatistic: string | null;
+  occupationStatistic: string | null;
 };
 
 export type CV = {
@@ -148,4 +152,33 @@ export type PartyAgreement = {
   parties: string[];
   matrix: (number | null)[][];
   shared: number[][];
+};
+
+export type PartyTimelineEntry = {
+  partyShort: string;
+  partyName: string;
+  start: string | null;
+  end: string | null;
+};
+
+export type MemberPartyHistory = {
+  timeline: PartyTimelineEntry[];
+  distinctParties: string[];
+  switched: boolean;
+};
+
+export type CaseSummary = {
+  sagid: number;
+  titelkort: string | null;
+  resume: string | null;
+  afstemningskonklusion: string | null;
+  baggrundsmateriale: string | null;
+  retsinformationsurl: string | null;
+  lovnummer: string | null;
+  lovnummerdato: string | null;
+  sagsstatus: string | null;
+  sagstype: string | null;
+  sagskategori: string | null;
+  stepTitel: string | null;
+  stepDato: string | null;
 };

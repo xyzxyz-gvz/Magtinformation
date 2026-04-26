@@ -1,15 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import {
+  MemberVotesExplorer,
+  type ExplorerVote,
+} from "@/components/MemberVotesExplorer";
 import { PartyBadge } from "@/components/PartyBadge";
 import {
+  getGovernments,
   getMember,
   getMemberAllies,
+  getMemberPartyHistory,
   getMemberProfile,
   getMemberVotes,
   getMembers,
   getParties,
+  getVoteTopics,
 } from "@/lib/data";
-import { VOTE_LABELS } from "@/lib/types";
+import {
+  bucketMemberVotesByGovernment,
+  formatDateRange,
+} from "@/lib/governments";
 
 export async function generateStaticParams() {
   const members = await getMembers();
@@ -27,12 +38,24 @@ export default async function MemberDetail({
   const id = Number(idStr);
   if (!Number.isFinite(id)) notFound();
 
-  const [member, profile, allies, parties, memberVotes] = await Promise.all([
+  const [
+    member,
+    profile,
+    allies,
+    parties,
+    memberVotes,
+    governments,
+    voteTopics,
+    partyHistoryMap,
+  ] = await Promise.all([
     getMember(id),
     getMemberProfile(id),
     getMemberAllies(id),
     getParties(),
     getMemberVotes(id),
+    getGovernments(),
+    getVoteTopics(),
+    getMemberPartyHistory(),
   ]);
 
   if (!member) notFound();
@@ -40,6 +63,55 @@ export default async function MemberDetail({
   const partyByShort = new Map(parties.map((p) => [p.short, p]));
   const party = partyByShort.get(member.partyShort);
   const cv = profile?.cv ?? {};
+  const partyHistory = partyHistoryMap[String(id)] ?? null;
+
+  const govBuckets = bucketMemberVotesByGovernment(memberVotes, governments);
+  const totalBucket = govBuckets.reduce(
+    (acc, b) => {
+      acc.total += b.total;
+      acc.present += b.present;
+      acc.absent += b.absent;
+      acc.deviation += b.deviation;
+      return acc;
+    },
+    { total: 0, present: 0, absent: 0, deviation: 0 },
+  );
+  const totalFremmøde = totalBucket.total
+    ? Math.round((totalBucket.present / totalBucket.total) * 100)
+    : null;
+  const totalAfvigelse = totalBucket.present
+    ? Math.round((totalBucket.deviation / totalBucket.present) * 100)
+    : null;
+
+  const explorerVotes: ExplorerVote[] = memberVotes.map((mv) => ({
+    id: mv.id,
+    d: mv.d,
+    t: mv.t,
+    v: mv.v,
+    ct: mv.ct,
+    cn: mv.cn,
+    dev: mv.dev,
+    topics: voteTopics[String(mv.id)] ?? [],
+  }));
+  const totalDeviation = explorerVotes.reduce((n, v) => n + (v.dev ? 1 : 0), 0);
+
+  const topicCountMap = new Map<string, number>();
+  for (const v of explorerVotes) {
+    for (const t of v.topics) {
+      topicCountMap.set(t, (topicCountMap.get(t) ?? 0) + 1);
+    }
+  }
+  const topicCounts = [...topicCountMap.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "da"))
+    .map(([topic, count]) => ({ topic, count }));
+
+  const dateValues = explorerVotes.map((v) => v.d);
+  const minDate = dateValues.length
+    ? dateValues.reduce((a, b) => (a < b ? a : b))
+    : "";
+  const maxDate = dateValues.length
+    ? dateValues.reduce((a, b) => (a > b ? a : b))
+    : "";
 
   return (
     <div className="space-y-10">
@@ -96,6 +168,138 @@ export default async function MemberDetail({
           value={member.afstemningerTotal.toLocaleString("da-DK")}
         />
       </div>
+
+      {partyHistory?.switched && (
+        <section>
+          <div className="mb-2 flex items-baseline justify-between gap-3">
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              Partihistorik
+            </h2>
+            <Link
+              href="/partiskiftere"
+              className="text-xs text-[var(--color-muted)] underline-offset-2 hover:underline"
+            >
+              Andre partiskiftere →
+            </Link>
+          </div>
+          <p className="mb-3 max-w-2xl text-xs text-[var(--color-muted)]">
+            {member.fornavn ?? member.navn} har siddet for{" "}
+            {partyHistory.distinctParties.length} forskellige grupper.
+            Dato‑perioder kommer direkte fra Folketingets aktørrelationer.
+          </p>
+          <ol className="relative space-y-2 border-l border-[var(--color-line)] pl-4">
+            {[...partyHistory.timeline].reverse().map((t, i) => {
+              const p = partyByShort.get(t.partyShort);
+              const range = `${t.start ?? "—"} – ${t.end ?? "nu"}`;
+              return (
+                <li key={`${t.partyShort}-${t.start ?? i}`} className="relative">
+                  <span
+                    className="absolute -left-[21px] top-1.5 h-3 w-3 rounded-full border-2 border-white"
+                    style={{ background: p?.color ?? "#888" }}
+                  />
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <PartyBadge party={p} size="sm" />
+                    <span className="font-medium">{p?.navn ?? t.partyName}</span>
+                    <span className="text-xs tabular-nums text-[var(--color-muted)]">
+                      {range}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
+
+      {govBuckets.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Pr. regering
+          </h2>
+          <p className="mb-3 max-w-2xl text-xs text-[var(--color-muted)]">
+            Fremmøde og afvigelse opdelt på de regeringer{" "}
+            {member.fornavn ?? member.navn} har siddet under. “Fravær” kan
+            skyldes lovlig{" "}
+            <Link
+              href="/#clearing"
+              className="underline underline-offset-2"
+            >
+              clearingsaftale
+            </Link>{" "}
+            — det er altså ikke nødvendigvis udeblivelse.
+          </p>
+          <div className="overflow-x-auto rounded border border-[var(--color-line)]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--color-line)] text-left text-xs uppercase tracking-wider text-[var(--color-muted)]">
+                  <th className="px-3 py-2 font-medium">Regering</th>
+                  <th className="px-3 py-2 text-right font-medium">Afstemninger</th>
+                  <th className="px-3 py-2 text-right font-medium">Stemte</th>
+                  <th className="px-3 py-2 text-right font-medium">Fravær</th>
+                  <th className="px-3 py-2 text-right font-medium">Fremmøde</th>
+                  <th className="px-3 py-2 text-right font-medium">Afvigelse</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-line)]">
+                {govBuckets.map((b, i) => (
+                  <tr key={b.government?.slug ?? `none-${i}`}>
+                    <td className="px-3 py-2">
+                      {b.government ? (
+                        <Link
+                          href={`/governments/${b.government.slug}`}
+                          className="hover:underline"
+                        >
+                          {b.government.name}
+                        </Link>
+                      ) : (
+                        <span className="text-[var(--color-muted)]">
+                          Uden for regeringsperiode
+                        </span>
+                      )}
+                      <div className="text-xs text-[var(--color-muted)]">
+                        {b.government ? formatDateRange(b.government) : "—"}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {b.total.toLocaleString("da-DK")}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {b.present.toLocaleString("da-DK")}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {b.absent.toLocaleString("da-DK")}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {b.fremmødePct != null ? `${b.fremmødePct}%` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {b.afvigelsePct != null ? `${b.afvigelsePct}%` : "—"}
+                    </td>
+                  </tr>
+                ))}
+                <tr className="bg-[var(--color-soft)] font-medium">
+                  <td className="px-3 py-2">Samlet</td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {totalBucket.total.toLocaleString("da-DK")}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {totalBucket.present.toLocaleString("da-DK")}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {totalBucket.absent.toLocaleString("da-DK")}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {totalFremmøde != null ? `${totalFremmøde}%` : "—"}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {totalAfvigelse != null ? `${totalAfvigelse}%` : "—"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {(cv.born || cv.educations?.length || cv.occupations?.length) && (
         <section>
@@ -186,34 +390,26 @@ export default async function MemberDetail({
         )}
       </section>
 
-      {memberVotes.length > 0 && (
+      {explorerVotes.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-            Seneste stemmer
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Alle stemmer
           </h2>
-          <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
-            {memberVotes.slice(0, 20).map((mv) => (
-              <li key={mv.id}>
-                <Link
-                  href={`/votes/${mv.id}`}
-                  className="flex items-baseline justify-between gap-6 py-2 hover:bg-[var(--color-soft)]"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm">
-                      {mv.ct ?? `Afstemning #${mv.id}`}
-                    </div>
-                    <div className="mt-0.5 text-xs text-[var(--color-muted)]">
-                      {VOTE_LABELS[mv.t] ?? "?"}
-                      {mv.dev ? " · afveg fra parti" : ""}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-xs tabular-nums text-[var(--color-muted)]">
-                    {mv.d}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <p className="mb-4 max-w-2xl text-xs text-[var(--color-muted)]">
+            Søg, filtrer på dato, emne eller stemmetype, og slå “Kun
+            afvigelser” til for kun at se de afstemninger hvor{" "}
+            {member.fornavn ?? member.navn} stemte anderledes end flertallet i{" "}
+            {party?.navn ?? member.partyShort}.
+          </p>
+          <Suspense fallback={null}>
+            <MemberVotesExplorer
+              votes={explorerVotes}
+              topicCounts={topicCounts}
+              minDate={minDate}
+              maxDate={maxDate}
+              totalDeviation={totalDeviation}
+            />
+          </Suspense>
         </section>
       )}
     </div>

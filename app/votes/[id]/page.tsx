@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { VoteBreakdown } from "@/components/VoteBreakdown";
 import {
+  getCaseSummary,
   getEnrichedVote,
   getGovernments,
   getMembers,
@@ -30,6 +31,8 @@ export default async function VoteDetail({
 
   if (!vote) notFound();
 
+  const caseSummary = await getCaseSummary(vote.sagstrinid);
+
   const government = getGovernmentForDate(governments, vote.dato);
   const total =
     vote.forCount + vote.imodCount + vote.fraværCount + vote.hverkenCount;
@@ -43,10 +46,32 @@ export default async function VoteDetail({
         <h1 className="mt-3 text-2xl font-semibold tracking-tight">
           {vote.caseTitel ?? vote.konklusion ?? `Afstemning #${vote.id}`}
         </h1>
+        {caseSummary?.titelkort &&
+          caseSummary.titelkort !== vote.caseTitel && (
+            <p className="mt-1 text-base text-[var(--color-muted)]">
+              {caseSummary.titelkort}
+            </p>
+          )}
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-[var(--color-muted)]">
           <span className="tabular-nums">{vote.dato}</span>
           <span>·</span>
-          <span>{vote.type ?? "Afstemning"}</span>
+          <span>
+            {caseSummary?.stepTitel
+              ? `${vote.type ?? "Afstemning"} (${caseSummary.stepTitel})`
+              : vote.type ?? "Afstemning"}
+          </span>
+          {vote.caseNummer && (
+            <>
+              <span>·</span>
+              <span className="tabular-nums">{vote.caseNummer}</span>
+            </>
+          )}
+          {caseSummary?.sagstype && (
+            <>
+              <span>·</span>
+              <span>{caseSummary.sagstype}</span>
+            </>
+          )}
           {government && (
             <>
               <span>·</span>
@@ -77,6 +102,50 @@ export default async function VoteDetail({
         <Tally type={4} count={vote.hverkenCount} total={total} />
       </div>
 
+      {caseSummary?.resume && (
+        <section>
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            Om sagen
+          </h2>
+          <p className="whitespace-pre-line text-sm leading-relaxed">
+            {caseSummary.resume}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-muted)]">
+            {caseSummary.sagsstatus && (
+              <span>Status: {caseSummary.sagsstatus}</span>
+            )}
+            {caseSummary.lovnummer && (
+              <span>
+                Lov nr. {caseSummary.lovnummer}
+                {caseSummary.lovnummerdato
+                  ? ` af ${caseSummary.lovnummerdato.slice(0, 10)}`
+                  : ""}
+              </span>
+            )}
+            {caseSummary.retsinformationsurl && (
+              <a
+                href={caseSummary.retsinformationsurl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-2 hover:text-[var(--color-ink)]"
+              >
+                Retsinformation ↗
+              </a>
+            )}
+            {vote.caseUrl && (
+              <a
+                href={vote.caseUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-2 hover:text-[var(--color-ink)]"
+              >
+                Sagsside ↗
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+
       {vote.konklusion && (
         <section>
           <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
@@ -87,6 +156,18 @@ export default async function VoteDetail({
           </p>
         </section>
       )}
+
+      {caseSummary?.afstemningskonklusion &&
+        caseSummary.afstemningskonklusion !== vote.konklusion && (
+          <section>
+            <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+              Afstemningskonklusion
+            </h2>
+            <p className="whitespace-pre-line text-sm leading-relaxed">
+              {caseSummary.afstemningskonklusion}
+            </p>
+          </section>
+        )}
 
       {enriched ? (
         <section>
@@ -99,8 +180,9 @@ export default async function VoteDetail({
             parties={parties}
           />
           <p className="mt-3 text-xs text-[var(--color-muted)]">
-            Hver prik er ét medlem. Farven viser hvad vedkommende stemte.
-            Rammen om hver gruppe er partifarven.
+            Hver prik er ét medlem — farven viser stemmen, klik for at åbne
+            medlemmets profil. Klik på et parti for at folde listen ud, eller
+            skift til “Navne” for at se alle navne.
           </p>
         </section>
       ) : (

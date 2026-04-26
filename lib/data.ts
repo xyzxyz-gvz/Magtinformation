@@ -3,9 +3,11 @@ import path from "node:path";
 import { cache } from "react";
 import type {
   Ally,
+  CaseSummary,
   EnrichedVote,
   Government,
   Member,
+  MemberPartyHistory,
   MemberProfile,
   MemberVote,
   Party,
@@ -106,4 +108,40 @@ export const getEnrichedVote = cache(
     const all = await getEnrichedVotes();
     return all.find((v) => v.id === id) ?? null;
   },
+);
+
+export const getCaseSummaries = cache(
+  (): Promise<Record<string, CaseSummary>> =>
+    readJSON("case_summaries.json", {} as Record<string, CaseSummary>),
+);
+
+export const getCaseSummary = cache(
+  async (sagstrinid: number | null): Promise<CaseSummary | null> => {
+    if (!sagstrinid) return null;
+    const all = await getCaseSummaries();
+    return all[String(sagstrinid)] ?? null;
+  },
+);
+
+export const getVoteTopics = cache(
+  (): Promise<Record<string, string[]>> =>
+    readJSON("vote_topics.json", {} as Record<string, string[]>),
+);
+
+export const getMemberPartyHistory = cache(
+  (): Promise<Record<string, MemberPartyHistory>> =>
+    readJSON(
+      "member_party_history.json",
+      {} as Record<string, MemberPartyHistory>,
+    ),
+);
+
+export type GovernmentMemberEntry = { id: number; votes: number };
+
+export const getGovernmentMembers = cache(
+  (): Promise<Record<string, GovernmentMemberEntry[]>> =>
+    readJSON(
+      "government_members.json",
+      {} as Record<string, GovernmentMemberEntry[]>,
+    ),
 );

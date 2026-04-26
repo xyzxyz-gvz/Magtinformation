@@ -61,8 +61,19 @@ PARTY_ORDER = {p["short"]: p["left_order"] for p in PARTY_DEFS}
 PARTY_COLOR = {p["short"]: p["color"] for p in PARTY_DEFS}
 
 
+def _born_to_iso(s: str | None) -> str | None:
+    """Folketinget formats DOB as 'DD-MM-YYYY' — convert to ISO YYYY-MM-DD."""
+    if not s:
+        return None
+    m = re.match(r"(\d{2})-(\d{2})-(\d{4})$", s.strip())
+    if not m:
+        return None
+    d, mm, y = m.groups()
+    return f"{y}-{mm}-{d}"
+
+
 def parse_biografi(bio_xml: str | None) -> dict:
-    """Extract photo, party, constituency from member biography XML."""
+    """Extract photo, party, constituency, demographics from member biography XML."""
     if not bio_xml:
         return {}
     try:
@@ -83,6 +94,10 @@ def parse_biografi(bio_xml: str | None) -> dict:
             "constituency": constituency,
             "url": get("url"),
             "profession": get("profession"),
+            "sex": get("sex"),
+            "born": _born_to_iso(get("born")),
+            "educationStatistic": get("educationStatistic"),
+            "occupationStatistic": get("occupationStatistic"),
         }
     except ET.ParseError:
         return {}
@@ -541,6 +556,10 @@ def build_members(members: list[dict], actor_relations: list[dict]) -> tuple[lis
             "startdato": rel.get("startdato"),
             "slutdato": rel.get("slutdato"),
             "opdateringsdato": person.get("opdateringsdato"),
+            "sex": bio.get("sex"),
+            "born": bio.get("born"),
+            "educationStatistic": bio.get("educationStatistic"),
+            "occupationStatistic": bio.get("occupationStatistic"),
             # isCurrentMF is set in a second pass after votes are known
             "isCurrentMF": False,
         })
@@ -587,16 +606,26 @@ def mark_current_mfs(
     recent_n: int = 20,
 ) -> None:
     """
-    Mark members as isCurrentMF=True if they appear in the most recent votes.
-    Also compute fremmødePct and afvigelsePct from the enriched votes.
+    Mark members as isCurrentMF=True if they currently hold a Folketing seat.
+
+    Folketinget has exactly 179 seats. Every vote records all 179 seat holders
+    (including 'fravær' for those absent), so the most recent vote is the
+    canonical seating snapshot. Using a wider window (e.g. recent_n=20) leaks
+    stedfortrædere who briefly held the seat during an MF's orlov but are no
+    longer the seat holder, which would push the count above 179 and confuse
+    readers. The recent_n parameter is kept for API compatibility but no
+    longer used for the current-seat snapshot itself.
+
+    Also computes fremmødePct and afvigelsePct from ALL enriched votes.
     Modifies processed_members in place.
     """
     from collections import Counter
 
-    # Collect all aktørids from the most recent recent_n votes
+    # Anchor on the most recent vote — its stemmer list is the canonical
+    # seating (always 179 entries; absentees recorded as 'fravær').
     current_ids: set[int] = set()
-    for vote in enriched_votes[:recent_n]:
-        for s in vote["stemmer"]:
+    if enriched_votes:
+        for s in enriched_votes[0]["stemmer"]:
             current_ids.add(s["aktørid"])
 
     # Build per-member vote counts from ALL enriched votes
@@ -815,6 +844,178 @@ def build_votes_enriched(
         count += 1
 
     return enriched
+
+
+def build_government_members(
+    stemmer_by_vote: dict[int, list[dict]],
+    votes: list[dict],
+    governments: list[dict],
+) -> dict[str, list[dict]]:
+    """
+    For each government period, derive the MFs who cast at least one vote
+    during that period, along with how many votes each cast. Used to split
+    "primære mandatholdere" (179 most active = the elected seat holders)
+    from short-term substitutes / udskiftere.
+    """
+    vote_date: dict[int, str] = {}
+    for v in votes:
+        d = (v.get("opdateringsdato") or "")[:10]
+        if d:
+            vote_date[v["id"]] = d
+
+    gov_ranges = [(g["slug"], g["start"], g["end"]) for g in governments]
+    counts: dict[str, dict[int, int]] = {g["slug"]: {} for g in governments}
+
+    for vote_id, stemmer in stemmer_by_vote.items():
+        d = vote_date.get(vote_id)
+        if not d:
+            continue
+        slug = next(
+            (s for s, gs, ge in gov_ranges if d >= gs and (ge is None or d < ge)),
+            None,
+        )
+        if not slug:
+            continue
+        bucket = counts[slug]
+        for s in stemmer:
+            mid = s.get("aktørid")
+            if mid:
+                bucket[mid] = bucket.get(mid, 0) + 1
+
+    return {
+        slug: [
+            {"id": mid, "votes": c}
+            for mid, c in sorted(b.items(), key=lambda x: (-x[1], x[0]))
+        ]
+        for slug, b in counts.items()
+    }
+
+
+def build_member_party_history(
+    members: list[dict],
+    actor_relations: list[dict],
+    processed_member_ids: set[int],
+) -> dict[str, dict]:
+    """
+    Build per-MF chronological party timeline from actor_relations.
+    Returns: { "<member_id>": { timeline: [{partyShort, partyName, start, end}],
+                                 distinctParties: [...], switched: bool } }
+    Used to surface party-switchers ("partiskiftere") on profile pages and
+    on the dedicated /partiskiftere index.
+    """
+    actor_by_id = {m["id"]: m for m in members}
+    edges_by_person: dict[int, list[dict]] = defaultdict(list)
+
+    for r in actor_relations:
+        role = (r.get("AktørAktørRolle") or {}).get("rolle")
+        if role != "medlem":
+            continue
+        fr = actor_by_id.get(r.get("fraaktørid"))
+        to = actor_by_id.get(r.get("tilaktørid"))
+        if not fr or not to:
+            continue
+        if fr.get("typeid") != 5 or to.get("typeid") != 4:
+            continue
+        short = to.get("gruppenavnkort") or "UFG"
+        navn = to.get("navn") or short
+        start = (r.get("startdato") or "")[:10] or None
+        end = (r.get("slutdato") or "")[:10] or None
+        edges_by_person[fr["id"]].append({
+            "partyShort": short,
+            "partyName": navn,
+            "start": start,
+            "end": end,
+        })
+
+    def collapse(edges: list[dict]) -> list[dict]:
+        edges = sorted(edges, key=lambda e: (e["start"] or "0000-00-00"))
+        out: list[dict] = []
+        for e in edges:
+            if not out:
+                out.append(dict(e))
+                continue
+            last = out[-1]
+            if e["partyShort"] == last["partyShort"]:
+                if last["end"] is None or (e["end"] is not None and e["end"] > last["end"]):
+                    last["end"] = e["end"]
+                if last["end"] is not None and e["end"] is None:
+                    last["end"] = None
+            else:
+                out.append(dict(e))
+        return out
+
+    out: dict[str, dict] = {}
+    for pid, edges in edges_by_person.items():
+        if pid not in processed_member_ids:
+            continue
+        timeline = collapse(edges)
+        if not timeline:
+            continue
+        distinct = sorted({t["partyShort"] for t in timeline})
+        out[str(pid)] = {
+            "timeline": timeline,
+            "distinctParties": distinct,
+            "switched": len(distinct) > 1,
+        }
+    return out
+
+
+def build_case_summaries(
+    votes_list: list[dict],
+    enriched_votes: list[dict],
+    cases_by_id: dict[int, dict],
+    sagstrin_to_sagid: dict[int, int],
+    case_steps: list[dict] | None,
+) -> dict[str, dict]:
+    """
+    Build public/data/case_summaries.json — keyed by sagstrinid (string).
+    Used by the vote detail page to show "Om sagen" (resume, status, links).
+    Only includes cases referenced by votes_list / votes_enriched to keep file small.
+    """
+    step_by_id: dict[int, dict] = {}
+    if case_steps:
+        for cs in case_steps:
+            step_by_id[cs["id"]] = cs
+
+    needed: set[int] = set()
+    for v in votes_list:
+        if v.get("sagstrinid"):
+            needed.add(v["sagstrinid"])
+    for v in enriched_votes:
+        if v.get("sagstrinid"):
+            needed.add(v["sagstrinid"])
+
+    summaries: dict[str, dict] = {}
+    for stid in needed:
+        sid = sagstrin_to_sagid.get(stid)
+        if not sid:
+            continue
+        case = cases_by_id.get(sid)
+        if not case:
+            continue
+        step = step_by_id.get(stid) or {}
+        entry = {
+            "sagid": sid,
+            "titelkort": case.get("titelkort") or None,
+            "resume": case.get("resume") or None,
+            "afstemningskonklusion": case.get("afstemningskonklusion") or None,
+            "baggrundsmateriale": case.get("baggrundsmateriale") or None,
+            "retsinformationsurl": case.get("retsinformationsurl") or None,
+            "lovnummer": case.get("lovnummer") or None,
+            "lovnummerdato": case.get("lovnummerdato") or None,
+            "sagsstatus": (case.get("Sagsstatus") or {}).get("status"),
+            "sagstype": (case.get("Sagstype") or {}).get("type"),
+            "sagskategori": (case.get("Sagskategori") or {}).get("kategori"),
+            "stepTitel": step.get("titel"),
+            "stepDato": (step.get("dato") or "")[:10] or None,
+        }
+        # Normalize empty strings to None
+        for k, v in list(entry.items()):
+            if v == "":
+                entry[k] = None
+        summaries[str(stid)] = entry
+
+    return summaries
 
 
 def build_member_tags(profiles: list[dict]) -> dict[int, list[str]]:
@@ -1487,6 +1688,13 @@ def main() -> None:
         json.dumps(PARTY_DEFS, ensure_ascii=False, indent=2), encoding="utf-8",
     )
 
+    # governments.json is hand-curated and lives in public/data — read it so
+    # downstream stages can derive per-government membership / stats.
+    governments_path = DATA_DIR / "governments.json"
+    governments: list[dict] = []
+    if governments_path.exists():
+        governments = json.loads(governments_path.read_text())
+
     # ── Build in-memory data structures ──────────────────────────────────────
     print("\nBuilding members…")
     processed_members, member_by_id = build_members(members, actor_relations)
@@ -1659,6 +1867,84 @@ def main() -> None:
         json.dumps(enriched, ensure_ascii=False), encoding="utf-8",
     )
     print(f"  → votes_enriched.json ({len(enriched)} enriched votes)")
+
+    print("\nBuilding case summaries…")
+    case_summaries = build_case_summaries(
+        votes_list=votes_list,
+        enriched_votes=enriched,
+        cases_by_id=cases_by_id,
+        sagstrin_to_sagid=sagstrin_to_sagid,
+        case_steps=case_steps,
+    )
+    (DATA_DIR / "case_summaries.json").write_text(
+        json.dumps(case_summaries, ensure_ascii=False), encoding="utf-8",
+    )
+    print(f"  → case_summaries.json ({len(case_summaries)} cases)")
+
+    # Slim vote_id → topics map (used by the per-MF vote explorer).
+    vote_topics = {
+        str(v["id"]): v["topics"]
+        for v in votes_list
+        if v.get("topics")
+    }
+    (DATA_DIR / "vote_topics.json").write_text(
+        json.dumps(vote_topics, ensure_ascii=False), encoding="utf-8",
+    )
+    print(f"  → vote_topics.json ({len(vote_topics)} votes with topics)")
+
+    print("\nBuilding search index…")
+    topic_counts: dict[str, int] = {}
+    for ts in vote_topics.values():
+        for t in ts:
+            topic_counts[t] = topic_counts.get(t, 0) + 1
+    search_index = {
+        "members": [
+            {
+                "id": m["id"],
+                "navn": m["navn"],
+                "partyShort": m["partyShort"],
+                "isCurrentMF": m["isCurrentMF"],
+            }
+            for m in processed_members
+        ],
+        "topics": [
+            {"t": t, "n": n}
+            for t, n in sorted(topic_counts.items(), key=lambda x: -x[1])
+        ],
+    }
+    (DATA_DIR / "search_index.json").write_text(
+        json.dumps(search_index, ensure_ascii=False), encoding="utf-8",
+    )
+    print(
+        f"  → search_index.json ({len(search_index['members'])} members, "
+        f"{len(search_index['topics'])} topics)"
+    )
+
+    print("\nBuilding member party history…")
+    party_history = build_member_party_history(
+        members=members,
+        actor_relations=actor_relations,
+        processed_member_ids={m["id"] for m in processed_members},
+    )
+    (DATA_DIR / "member_party_history.json").write_text(
+        json.dumps(party_history, ensure_ascii=False), encoding="utf-8",
+    )
+    switchers = sum(1 for v in party_history.values() if v["switched"])
+    print(
+        f"  → member_party_history.json ({len(party_history)} MFs, {switchers} switchers)"
+    )
+
+    print("\nBuilding government → MFs map…")
+    gov_members = build_government_members(
+        stemmer_by_vote=stemmer_by_vote,
+        votes=votes,
+        governments=governments,
+    )
+    (DATA_DIR / "government_members.json").write_text(
+        json.dumps(gov_members, ensure_ascii=False), encoding="utf-8",
+    )
+    for slug, ids in gov_members.items():
+        print(f"  → {slug}: {len(ids)} MFs")
 
     if meetings_processed:
         (DATA_DIR / "meetings_list.json").write_text(
