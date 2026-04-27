@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { MemberTabs, type TabSpec } from "@/components/MemberTabs";
+import { ProfileTabs, type TabSpec } from "@/components/ProfileTabs";
+import {
+  MemberAttendanceChart,
+  type AttendancePoint,
+} from "@/components/charts/MemberAttendanceChart";
 import {
   MemberVotesExplorer,
   type ExplorerVote,
@@ -91,6 +95,29 @@ export default async function MemberDetail({
   const totalAfvigelse = totalBucket.present
     ? Math.round((totalBucket.deviation / totalBucket.present) * 100)
     : null;
+
+  // Attendance over time — quarterly buckets so trends emerge without noise.
+  // We aggregate present/absent per quarter, then pct = present / total.
+  const attendanceMap = new Map<string, { present: number; total: number }>();
+  for (const mv of memberVotes) {
+    if (!mv.d) continue;
+    const [year, mo] = mv.d.split("-");
+    const q = Math.ceil(Number(mo) / 3);
+    const bucket = `${year}-Q${q}`;
+    const row = attendanceMap.get(bucket) ?? { present: 0, total: 0 };
+    row.total++;
+    if (mv.t !== 3) row.present++;
+    attendanceMap.set(bucket, row);
+  }
+  const attendanceTrend: AttendancePoint[] = [...attendanceMap.entries()]
+    .filter(([, r]) => r.total >= 5) // skip near-empty quarters
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([bucket, r]) => ({
+      bucket,
+      label: bucket.replace("-", " "),
+      pct: Math.round((r.present / r.total) * 100),
+      total: r.total,
+    }));
 
   const explorerVotes: ExplorerVote[] = memberVotes.map((mv) => ({
     id: mv.id,
@@ -241,7 +268,7 @@ export default async function MemberDetail({
         </div>
       </header>
 
-      <MemberTabs
+      <ProfileTabs
         tabs={tabs}
         defaultTab="oversigt"
         panels={[
@@ -264,6 +291,22 @@ export default async function MemberDetail({
                     totalFremmøde={totalFremmøde}
                     totalAfvigelse={totalAfvigelse}
                   />
+                )}
+                {attendanceTrend.length >= 4 && (
+                  <section>
+                    <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                      Fremmøde over tid
+                    </h2>
+                    <p className="mb-3 max-w-2xl text-xs text-[var(--color-muted)]">
+                      Andelen af afstemninger {member.fornavn ?? member.navn}{" "}
+                      har deltaget i (alt undtagen fravær), opdelt pr. kvartal.
+                      Hver prik er ét kvartal med mindst 5 afstemninger.
+                    </p>
+                    <MemberAttendanceChart
+                      data={attendanceTrend}
+                      averagePct={totalFremmøde}
+                    />
+                  </section>
                 )}
                 {hasCV && (
                   <section>

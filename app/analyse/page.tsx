@@ -26,6 +26,11 @@ const ANALYSES = [
     body: "Stil to medlemmer side om side: enighed, demografi og en liste over de afstemninger de stemte forskelligt om.",
   },
   {
+    href: "/parties/sammenlign",
+    title: "Sammenlign to partier",
+    body: "Hvor enige er partiernes flertal? Hvilke emner deler dem, og hvilke afstemninger har de stemt forskelligt om?",
+  },
+  {
     href: "/topics",
     title: "Emner",
     body: "Bladr i alle emneord. Hver emneside viser partiernes stemmemønster på lige præcis det område.",

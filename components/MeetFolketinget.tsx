@@ -56,23 +56,10 @@ export function MeetFolketinget({
   const doubled = [...ordered, ...ordered];
 
   return (
-    <section>
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-          Mød Folketinget
-        </h2>
-        <Link
-          href="/members"
-          className="text-xs text-[var(--color-muted)] underline-offset-2 hover:underline"
-        >
-          Bladr alle MF'er →
-        </Link>
-      </div>
-
-      <div
-        className="group relative -mx-6 overflow-hidden"
-        aria-label={`Et kontinuerligt bladrende hjul over ${ordered.length} folketingsmedlemmer`}
-      >
+    <div
+      className="group relative -mx-6 overflow-hidden"
+      aria-label={`Et kontinuerligt bladrende hjul over ${ordered.length} folketingsmedlemmer`}
+    >
         {/* Edge fades so cards drift in/out softly */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[var(--color-paper)] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[var(--color-paper)] to-transparent" />
@@ -119,6 +106,5 @@ export function MeetFolketinget({
           })}
         </ul>
       </div>
-    </section>
   );
 }

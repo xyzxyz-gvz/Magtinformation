@@ -15,13 +15,16 @@ html, body {
   font-family: var(--font-sans);
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-a:hover {
-  text-decoration: underline;
+/* Default link styles — placed inside @layer base so Tailwind utility
+   classes (text-white, text-rose-700 etc.) always win the cascade. */
+@layer base {
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 @keyframes fade-in {

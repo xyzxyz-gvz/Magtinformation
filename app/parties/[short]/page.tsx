@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { DemographicStats } from "@/components/DemographicStats";
 import { PartyBadge } from "@/components/PartyBadge";
 import {
   PartyVotesExplorer,
   type PartyVoteRow,
 } from "@/components/PartyVotesExplorer";
+import { ProfileTabs, type TabSpec } from "@/components/ProfileTabs";
+import { buttonVariants } from "@/components/ui/button";
 import {
   getGovernments,
   getMembers,
@@ -16,7 +19,8 @@ import {
   getVotesList,
 } from "@/lib/data";
 import { formatDateRange } from "@/lib/governments";
-import type { Government, Member } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import type { Government, Member, Vote } from "@/lib/types";
 
 export async function generateStaticParams() {
   const parties = await getParties();
@@ -24,6 +28,7 @@ export async function generateStaticParams() {
 }
 
 const FAR_FUTURE = "9999-99-99";
+const TOPIC_MIN_VOTES = 5;
 
 function membersDuring(
   members: Member[],
@@ -41,10 +46,15 @@ function membersDuring(
 
 export default async function PartyDetail({
   params,
+  searchParams,
 }: {
   params: Promise<{ short: string }>;
+  searchParams: Promise<{ gov?: string }>;
 }) {
   const { short } = await params;
+  const sp = await searchParams;
+  const govSlug = sp.gov ?? "";
+
   const [parties, members, governments, votes, majorities, agreement, voteTopics] =
     await Promise.all([
       getParties(),
@@ -60,33 +70,39 @@ export default async function PartyDetail({
   if (!party) notFound();
   const partyByShort = new Map(parties.map((p) => [p.short, p]));
 
+  const selectedGov = governments.find((g) => g.slug === govSlug) ?? null;
+
+  // Votes scoped to the selected government period (or all-time if none)
+  const scopedVotes = selectedGov
+    ? votes.filter(
+        (v) =>
+          v.dato >= selectedGov.start &&
+          (selectedGov.end === null || v.dato < selectedGov.end),
+      )
+    : votes;
+
   const currentMembers = membersDuring(members, short, null);
   const partyMembers = members.filter((m) => m.partyShort === short);
   const totalEver = partyMembers.length;
 
-  const partyVoteCounts = { for: 0, imod: 0, hverken: 0, total: 0 };
-  for (const v of votes) {
-    const m = majorities[String(v.id)];
-    const t = m?.[short];
+  // Voting pattern + cohesion (scoped)
+  const voteCounts = { for: 0, imod: 0, hverken: 0, total: 0 };
+  for (const v of scopedVotes) {
+    const t = majorities[String(v.id)]?.[short];
     if (!t) continue;
-    partyVoteCounts.total++;
-    if (t === 1) partyVoteCounts.for++;
-    else if (t === 2) partyVoteCounts.imod++;
-    else if (t === 4) partyVoteCounts.hverken++;
+    voteCounts.total++;
+    if (t === 1) voteCounts.for++;
+    else if (t === 2) voteCounts.imod++;
+    else if (t === 4) voteCounts.hverken++;
   }
-
-  const cohesionDenominator =
-    partyVoteCounts.for + partyVoteCounts.imod + partyVoteCounts.hverken;
-  const cohesionPct = partyVoteCounts.total
-    ? Math.round((cohesionDenominator / partyVoteCounts.total) * 100)
+  const decided = voteCounts.for + voteCounts.imod + voteCounts.hverken;
+  const cohesionPct = voteCounts.total
+    ? Math.round((decided / voteCounts.total) * 100)
     : null;
 
-  // Closest / most-distant parties from the agreement matrix
-  type Allyrow = {
-    short: string;
-    agreement: number;
-    shared: number;
-  };
+  // Closest / furthest parties — agreement matrix is all-time only.
+  // (Per-period agreement would require recomputing, which is heavy.)
+  type Allyrow = { short: string; agreement: number; shared: number };
   let closest: Allyrow[] = [];
   let furthest: Allyrow[] = [];
   if (agreement) {
@@ -104,9 +120,7 @@ export default async function PartyDetail({
     }
   }
 
-  // Per-topic stance: how often did this party's flertal stemme for/imod/hverken
-  // when an emneord var knyttet til afstemningen.
-  const TOPIC_MIN_VOTES = 5;
+  // Per-topic stance (scoped)
   type TopicStance = {
     topic: string;
     for: number;
@@ -115,7 +129,7 @@ export default async function PartyDetail({
     total: number;
   };
   const topicStanceMap = new Map<string, TopicStance>();
-  for (const v of votes) {
+  for (const v of scopedVotes) {
     const partyMaj = majorities[String(v.id)]?.[short];
     if (!partyMaj) continue;
     const ts = voteTopics[String(v.id)];
@@ -150,10 +164,9 @@ export default async function PartyDetail({
     .sort((a, b) => b.imod / b.total - a.imod / a.total)
     .slice(0, 5);
 
-  // Build per-vote rows annotated with party stance for the PartyVotesExplorer.
-  // Sorted newest first so the default "Alle" tab shows recent activity.
+  // Per-vote rows for the explorer (scoped)
   const partyVoteRows: PartyVoteRow[] = [];
-  for (const v of votes) {
+  for (const v of scopedVotes) {
     const stance = majorities[String(v.id)]?.[short];
     if (stance !== 1 && stance !== 2 && stance !== 4) continue;
     partyVoteRows.push({
@@ -167,261 +180,364 @@ export default async function PartyDetail({
   }
   partyVoteRows.sort((a, b) => b.d.localeCompare(a.d));
 
+  const tabs: TabSpec[] = [
+    { id: "oversigt", label: "Oversigt" },
+    { id: "stemmer", label: "Stemmer", count: partyVoteRows.length },
+    { id: "emner", label: "Emner", count: topicByVolume.length },
+    { id: "medlemmer", label: "Medlemmer" },
+  ];
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div>
         <Link href="/parties" className="text-sm text-[var(--color-muted)]">
           ← Partier
         </Link>
       </div>
 
-      <header className="flex items-center gap-4">
-        <PartyBadge party={party} size="lg" />
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {party.navn}
-          </h1>
-          <div className="mt-1 text-sm text-[var(--color-muted)]">
-            Bogstav {party.letter} ·{" "}
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-full align-middle"
-              style={{ background: party.color }}
-            />{" "}
-            <span className="font-mono text-xs">{party.color}</span>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <PartyBadge party={party} size="lg" />
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              {party.navn}
+            </h1>
+            <div className="mt-1 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+              <span>Bogstav {party.letter}</span>
+              <span>·</span>
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ background: party.color }}
+              />
+              <span className="font-mono text-xs">{party.color}</span>
+            </div>
           </div>
         </div>
+        <Link
+          href={`/parties/sammenlign?a=${party.short}`}
+          className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
+        >
+          Sammenlign med…
+        </Link>
       </header>
 
       <div className="grid grid-cols-3 gap-3">
-        <Stat label="Nuværende MF'er" value={String(currentMembers.length)} />
+        <Stat
+          label="Nuværende MF'er"
+          value={String(currentMembers.length)}
+        />
         <Stat label="Medlemmer i alt" value={String(totalEver)} />
         <Stat
           label="Partienhed"
           value={cohesionPct != null ? `${cohesionPct}%` : "—"}
           hint={
             cohesionPct != null
-              ? `flertal valgt i ${partyVoteCounts.total.toLocaleString("da-DK")} afstemninger`
+              ? `flertal valgt i ${voteCounts.total.toLocaleString("da-DK")} afstemninger`
               : undefined
           }
         />
       </div>
 
-      {currentMembers.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-            Demografi · nuværende MF'er
-          </h2>
-          <DemographicStats
-            members={currentMembers}
-            refDate={new Date().toISOString().slice(0, 10)}
-            showParty={false}
-          />
-        </section>
-      )}
+      <GovFilter governments={governments} active={govSlug} short={short} />
 
-      {(closest.length > 0 || furthest.length > 0) && (
-        <section className="grid gap-6 md:grid-cols-2">
-          <div>
-            <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-              Stemmer mest med
-            </h2>
-            <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
-              {closest.map((r) => {
-                const p = partyByShort.get(r.short);
-                return (
-                  <li key={r.short}>
-                    <Link
-                      href={`/parties/${r.short}`}
-                      className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
-                    >
-                      <div className="flex items-center gap-2">
-                        <PartyBadge party={p} size="sm" />
-                        <span className="text-sm">{p?.navn ?? r.short}</span>
-                      </div>
-                      <div className="text-sm tabular-nums">
-                        {(r.agreement * 100).toFixed(1)}%
-                        <span className="ml-1 text-xs text-[var(--color-muted)]">
-                          / {r.shared.toLocaleString("da-DK")}
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          <div>
-            <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-              Stemmer mindst med
-            </h2>
-            <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
-              {furthest.map((r) => {
-                const p = partyByShort.get(r.short);
-                return (
-                  <li key={r.short}>
-                    <Link
-                      href={`/parties/${r.short}`}
-                      className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
-                    >
-                      <div className="flex items-center gap-2">
-                        <PartyBadge party={p} size="sm" />
-                        <span className="text-sm">{p?.navn ?? r.short}</span>
-                      </div>
-                      <div className="text-sm tabular-nums">
-                        {(r.agreement * 100).toFixed(1)}%
-                        <span className="ml-1 text-xs text-[var(--color-muted)]">
-                          / {r.shared.toLocaleString("da-DK")}
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </section>
-      )}
+      <ProfileTabs
+        tabs={tabs}
+        defaultTab="oversigt"
+        panels={[
+          {
+            id: "oversigt",
+            node: (
+              <div className="space-y-10">
+                <section>
+                  <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                    Stemmemønster
+                    {selectedGov && ` · ${selectedGov.name}`}
+                  </h2>
+                  {voteCounts.total === 0 ? (
+                    <p className="text-sm text-[var(--color-muted)]">
+                      Ingen data i denne periode.
+                    </p>
+                  ) : (
+                    <PatternBar counts={voteCounts} />
+                  )}
+                </section>
 
-      <section>
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-          Stemmemønster
-        </h2>
-        {partyVoteCounts.total === 0 ? (
-          <p className="text-sm text-[var(--color-muted)]">Ingen data.</p>
-        ) : (
-          <VoteBar counts={partyVoteCounts} />
-        )}
-      </section>
+                {(closest.length > 0 || furthest.length > 0) && (
+                  <section className="grid gap-6 md:grid-cols-2">
+                    <AllyList
+                      title="Stemmer mest med"
+                      rows={closest}
+                      partyByShort={partyByShort}
+                    />
+                    <AllyList
+                      title="Stemmer mindst med"
+                      rows={furthest}
+                      partyByShort={partyByShort}
+                    />
+                    <p className="text-xs text-[var(--color-muted)] md:col-span-2">
+                      Beregnet på alle delte afstemninger i datasættet — ikke
+                      filtreret af regering ovenfor.
+                    </p>
+                  </section>
+                )}
 
-      {topicByVolume.length > 0 && (
-        <section className="space-y-6">
-          <div>
-            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-              Stemmer pr. emne
-            </h2>
-            <p className="mt-1 max-w-2xl text-xs text-[var(--color-muted)]">
-              Hvordan {party.navn}s flertal stemte fordelt på emneord. Kun
-              emner hvor partiet har stemt mindst {TOPIC_MIN_VOTES} gange er
-              med.
-            </p>
-          </div>
+                {currentMembers.length > 0 && (
+                  <section>
+                    <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                      Demografi · nuværende MF'er
+                    </h2>
+                    <DemographicStats
+                      members={currentMembers}
+                      refDate={new Date().toISOString().slice(0, 10)}
+                      showParty={false}
+                    />
+                  </section>
+                )}
+              </div>
+            ),
+          },
+          {
+            id: "stemmer",
+            node:
+              partyVoteRows.length === 0 ? (
+                <p className="text-sm text-[var(--color-muted)]">
+                  Ingen afstemninger i denne periode.
+                </p>
+              ) : (
+                <section>
+                  <p className="mb-4 max-w-2xl text-xs text-[var(--color-muted)]">
+                    {selectedGov
+                      ? `Alle afstemninger under ${selectedGov.name} hvor ${party.navn}s flertal har taget stilling.`
+                      : `Alle afstemninger hvor ${party.navn}s flertal har taget stilling.`}
+                  </p>
+                  <Suspense fallback={null}>
+                    <PartyVotesExplorer
+                      votes={partyVoteRows}
+                      partyName={party.navn}
+                    />
+                  </Suspense>
+                </section>
+              ),
+          },
+          {
+            id: "emner",
+            node:
+              topicByVolume.length === 0 ? (
+                <p className="text-sm text-[var(--color-muted)]">
+                  Ingen emnedata i denne periode.
+                </p>
+              ) : (
+                <section className="space-y-6">
+                  <p className="max-w-2xl text-xs text-[var(--color-muted)]">
+                    Hvordan {party.navn}s flertal stemte fordelt på emneord.
+                    Kun emner hvor partiet har stemt mindst{" "}
+                    {TOPIC_MIN_VOTES} gange er med.
+                  </p>
 
-          {(topicMostFor.length > 0 || topicMostImod.length > 0) && (
-            <div className="grid gap-6 md:grid-cols-2">
-              {topicMostFor.length > 0 && (
-                <div>
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-emerald-700">
-                    Mest stemt for
-                  </h3>
-                  <ul className="space-y-1.5">
-                    {topicMostFor.map((r) => (
-                      <TopicRow
-                        key={r.topic}
-                        topic={r.topic}
-                        forCount={r.for}
-                        imodCount={r.imod}
-                        hverkenCount={r.hverken}
-                        total={r.total}
-                        partyShort={short}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {topicMostImod.length > 0 && (
-                <div>
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-rose-700">
-                    Mest stemt imod
-                  </h3>
-                  <ul className="space-y-1.5">
-                    {topicMostImod.map((r) => (
-                      <TopicRow
-                        key={r.topic}
-                        topic={r.topic}
-                        forCount={r.for}
-                        imodCount={r.imod}
-                        hverkenCount={r.hverken}
-                        total={r.total}
-                        partyShort={short}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
+                  {(topicMostFor.length > 0 || topicMostImod.length > 0) && (
+                    <div className="grid gap-6 md:grid-cols-2">
+                      {topicMostFor.length > 0 && (
+                        <div>
+                          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-emerald-700">
+                            Mest stemt for
+                          </h3>
+                          <ul className="space-y-1.5">
+                            {topicMostFor.map((r) => (
+                              <TopicRow
+                                key={r.topic}
+                                topic={r.topic}
+                                forCount={r.for}
+                                imodCount={r.imod}
+                                hverkenCount={r.hverken}
+                                total={r.total}
+                                partyShort={short}
+                              />
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {topicMostImod.length > 0 && (
+                        <div>
+                          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-rose-700">
+                            Mest stemt imod
+                          </h3>
+                          <ul className="space-y-1.5">
+                            {topicMostImod.map((r) => (
+                              <TopicRow
+                                key={r.topic}
+                                topic={r.topic}
+                                forCount={r.for}
+                                imodCount={r.imod}
+                                hverkenCount={r.hverken}
+                                total={r.total}
+                                partyShort={short}
+                              />
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-          <div>
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]">
-              Hyppigste emner
-            </h3>
-            <ul className="space-y-1.5">
-              {topicByVolume.map((r) => (
-                <TopicRow
-                  key={r.topic}
-                  topic={r.topic}
-                  forCount={r.for}
-                  imodCount={r.imod}
-                  hverkenCount={r.hverken}
-                  total={r.total}
-                  partyShort={short}
+                  <div>
+                    <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                      Hyppigste emner
+                    </h3>
+                    <ul className="space-y-1.5">
+                      {topicByVolume.map((r) => (
+                        <TopicRow
+                          key={r.topic}
+                          topic={r.topic}
+                          forCount={r.for}
+                          imodCount={r.imod}
+                          hverkenCount={r.hverken}
+                          total={r.total}
+                          partyShort={short}
+                        />
+                      ))}
+                    </ul>
+                  </div>
+                </section>
+              ),
+          },
+          {
+            id: "medlemmer",
+            node: (
+              <section className="space-y-6">
+                <GovernmentBlock
+                  heading="Aktive nu"
+                  members={currentMembers}
+                  party={party.color}
                 />
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
+                {governments.map((g) => {
+                  const list = membersDuring(members, short, g);
+                  if (list.length === 0) return null;
+                  return (
+                    <GovernmentBlock
+                      key={g.slug}
+                      heading={
+                        <span className="flex flex-wrap items-baseline gap-3">
+                          <Link
+                            href={`/governments/${g.slug}`}
+                            className="underline-offset-2 hover:underline"
+                          >
+                            {g.name}
+                          </Link>
+                          <span className="text-xs text-[var(--color-muted)]">
+                            {formatDateRange(g)}
+                          </span>
+                        </span>
+                      }
+                      members={list}
+                      party={party.color}
+                    />
+                  );
+                })}
+              </section>
+            ),
+          },
+        ]}
+      />
+    </div>
+  );
+}
 
-      {partyVoteRows.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-            Alle stemmer
-          </h2>
-          <p className="mb-4 max-w-2xl text-xs text-[var(--color-muted)]">
-            Alle afstemninger hvor {party.navn}s flertal har taget stilling.
-            Skift mellem fanerne for at se hvad partiet har stemt for, imod
-            eller hverken for/imod.
-          </p>
-          <PartyVotesExplorer votes={partyVoteRows} partyName={party.navn} />
-        </section>
+// ────────────────────────────────────────────────────────────────────
+// Government filter — server component, posts to ?gov=<slug>
+// ────────────────────────────────────────────────────────────────────
+function GovFilter({
+  governments,
+  active,
+  short,
+}: {
+  governments: Government[];
+  active: string;
+  short: string;
+}) {
+  return (
+    <form
+      method="GET"
+      action={`/parties/${short}`}
+      className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-soft)] p-3 text-sm"
+    >
+      <label
+        htmlFor="gov"
+        className="text-xs uppercase tracking-wider text-[var(--color-muted)]"
+      >
+        Periode
+      </label>
+      <select
+        id="gov"
+        name="gov"
+        defaultValue={active}
+        className="rounded border border-[var(--color-line)] bg-white px-2 py-1.5"
+      >
+        <option value="">Alle perioder</option>
+        {governments.map((g) => (
+          <option key={g.slug} value={g.slug}>
+            {g.name}
+          </option>
+        ))}
+      </select>
+      <button
+        type="submit"
+        className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
+      >
+        Anvend
+      </button>
+      {active && (
+        <Link
+          href={`/parties/${short}`}
+          className="text-xs text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-ink)] hover:underline"
+        >
+          Nulstil
+        </Link>
       )}
+      <span className="ml-auto text-xs text-[var(--color-muted)]">
+        Filtrer Stemmer + Emner + Stemmemønster
+      </span>
+    </form>
+  );
+}
 
-      <section>
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
-          Medlemmer pr. regering
-        </h2>
-        <div className="space-y-6">
-          <GovernmentBlock
-            heading="Aktive nu"
-            members={currentMembers}
-            party={party.color}
-          />
-          {governments.map((g) => {
-            const list = membersDuring(members, short, g);
-            if (list.length === 0) return null;
-            return (
-              <GovernmentBlock
-                key={g.slug}
-                heading={
-                  <span className="flex items-baseline gap-3">
-                    <Link
-                      href={`/governments/${g.slug}`}
-                      className="underline-offset-2 hover:underline"
-                    >
-                      {g.name}
-                    </Link>
-                    <span className="text-xs text-[var(--color-muted)]">
-                      {formatDateRange(g)}
-                    </span>
+function AllyList({
+  title,
+  rows,
+  partyByShort,
+}: {
+  title: string;
+  rows: { short: string; agreement: number; shared: number }[];
+  partyByShort: Map<string, { navn: string; color: string; letter: string; short: string; left_order: number }>;
+}) {
+  return (
+    <div>
+      <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
+        {title}
+      </h2>
+      <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+        {rows.map((r) => {
+          const p = partyByShort.get(r.short);
+          return (
+            <li key={r.short}>
+              <Link
+                href={`/parties/${r.short}`}
+                className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
+              >
+                <div className="flex items-center gap-2">
+                  <PartyBadge party={p} size="sm" />
+                  <span className="text-sm">{p?.navn ?? r.short}</span>
+                </div>
+                <div className="text-sm tabular-nums">
+                  {(r.agreement * 100).toFixed(1)}%
+                  <span className="ml-1 text-xs text-[var(--color-muted)]">
+                    / {r.shared.toLocaleString("da-DK")}
                   </span>
-                }
-                members={list}
-                party={party.color}
-              />
-            );
-          })}
-        </div>
-      </section>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -442,7 +558,7 @@ function GovernmentBlock({
     <div className="rounded-lg border px-4 py-3" style={{ borderColor: party }}>
       <div className="mb-2 flex items-baseline justify-between gap-4">
         <h3 className="text-sm font-medium">{heading}</h3>
-        <span className="text-xs text-[var(--color-muted)] tabular-nums">
+        <span className="text-xs tabular-nums text-[var(--color-muted)]">
           {members.length}
         </span>
       </div>
@@ -503,7 +619,7 @@ function TopicRow({
   );
 }
 
-function VoteBar({
+function PatternBar({
   counts,
 }: {
   counts: { for: number; imod: number; hverken: number; total: number };

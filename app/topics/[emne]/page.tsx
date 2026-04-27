@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaseTypeBadge } from "@/components/CaseTypeBadge";
+import { PartyBadge } from "@/components/PartyBadge";
 import {
   getParties,
   getVoteMajorities,
@@ -115,30 +116,51 @@ export default async function TopicDetail({
           <p className="mb-3 text-xs text-[var(--color-muted)]">
             Hver bjælke viser hvordan partiets flertal stemte hen over alle
             afstemninger på dette emne. Partier med under 5 afstemninger
-            udeladt.
+            udeladt. Sorteret venstrefløj → højrefløj.
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {stanceRows.map((r) => (
-              <li key={r.short}>
-                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-                  <Link
-                    href={`/parties/${r.short}`}
-                    className="font-medium hover:underline"
-                  >
-                    {r.party?.navn ?? r.short}
-                  </Link>
-                  <span className="text-xs tabular-nums text-[var(--color-muted)]">
-                    {r.total} afstemninger
-                  </span>
-                </div>
-                <Stance
-                  forPct={r.forPct}
-                  imodPct={r.imodPct}
-                  hverkenPct={r.hverkenPct}
-                  forCount={r.for}
-                  imodCount={r.imod}
-                  hverkenCount={r.hverken}
-                />
+              <li
+                key={r.short}
+                className="rounded-lg border border-[var(--color-line)] bg-white px-4 py-3 transition hover:border-[var(--color-ink)]/30"
+              >
+                <Link
+                  href={`/parties/${r.short}`}
+                  className="block no-underline hover:no-underline"
+                >
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <PartyBadge party={r.party} size="sm" />
+                      <span className="font-medium text-[var(--color-ink)]">
+                        {r.party?.navn ?? r.short}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-baseline gap-3 text-xs tabular-nums">
+                      <span className="text-emerald-700">
+                        For {r.forPct}%
+                      </span>
+                      <span className="text-rose-700">
+                        Imod {r.imodPct}%
+                      </span>
+                      {r.hverken > 0 && (
+                        <span className="text-amber-700">
+                          Hverken {r.hverkenPct}%
+                        </span>
+                      )}
+                      <span className="text-[var(--color-muted)]">
+                        · {r.total} afstemninger
+                      </span>
+                    </div>
+                  </div>
+                  <Stance
+                    forPct={r.forPct}
+                    imodPct={r.imodPct}
+                    hverkenPct={r.hverkenPct}
+                    forCount={r.for}
+                    imodCount={r.imod}
+                    hverkenCount={r.hverken}
+                  />
+                </Link>
               </li>
             ))}
           </ul>
@@ -192,31 +214,20 @@ function Stance({
   forPct,
   imodPct,
   hverkenPct,
-  forCount,
-  imodCount,
-  hverkenCount,
 }: {
   forPct: number;
   imodPct: number;
   hverkenPct: number;
-  forCount: number;
-  imodCount: number;
-  hverkenCount: number;
+  // legacy fields kept for backwards-compatibility with other callers
+  forCount?: number;
+  imodCount?: number;
+  hverkenCount?: number;
 }) {
   return (
-    <div>
-      <div className="flex h-2.5 overflow-hidden rounded-full">
-        <div style={{ width: `${forPct}%`, background: "#16a34a" }} />
-        <div style={{ width: `${imodPct}%`, background: "#dc2626" }} />
-        <div style={{ width: `${hverkenPct}%`, background: "#eab308" }} />
-      </div>
-      <div className="mt-1 flex flex-wrap gap-x-3 text-xs tabular-nums text-[var(--color-muted)]">
-        <span>For {forCount} ({forPct}%)</span>
-        <span>Imod {imodCount} ({imodPct}%)</span>
-        {hverkenCount > 0 && (
-          <span>Hverken {hverkenCount} ({hverkenPct}%)</span>
-        )}
-      </div>
+    <div className="flex h-2.5 overflow-hidden rounded-full">
+      <div style={{ width: `${forPct}%`, background: "#16a34a" }} />
+      <div style={{ width: `${imodPct}%`, background: "#dc2626" }} />
+      <div style={{ width: `${hverkenPct}%`, background: "#eab308" }} />
     </div>
   );
 }

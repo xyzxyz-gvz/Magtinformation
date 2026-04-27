@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CaseTypeBadge, classifyCase } from "@/components/CaseTypeBadge";
+import { VotesPerMonthChart } from "@/components/charts/VotesPerMonthChart";
 import { EmptyState } from "@/components/EmptyState";
 import { VoteBar } from "@/components/VoteBar";
 import { VotesFilter } from "@/components/VotesFilter";
@@ -93,6 +94,17 @@ export default async function VotesIndex({
     return s ? `?${s}` : "";
   };
 
+  // Activity sparkline — votes per month from the *currently filtered* set
+  // (so it adapts to whatever the user has filtered down to).
+  const monthCounts = new Map<string, number>();
+  for (const v of filtered) {
+    const m = v.dato.slice(0, 7); // YYYY-MM
+    monthCounts.set(m, (monthCounts.get(m) ?? 0) + 1);
+  }
+  const months = [...monthCounts.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, count]) => ({ month, count }));
+
   return (
     <div className="space-y-8">
       <div>
@@ -101,6 +113,21 @@ export default async function VotesIndex({
           {total.toLocaleString("da-DK")} afstemninger
         </p>
       </div>
+
+      {months.length > 1 && (
+        <section>
+          <div className="mb-2 flex items-baseline justify-between gap-3 text-xs text-[var(--color-muted)]">
+            <span className="uppercase tracking-wider">
+              Afstemninger pr. måned
+            </span>
+            <span className="tabular-nums">
+              {months.length} måneder · gennemsnit{" "}
+              {Math.round(total / months.length).toLocaleString("da-DK")}/md
+            </span>
+          </div>
+          <VotesPerMonthChart data={months} />
+        </section>
+      )}
 
       <VotesFilter
         governments={governments}
