@@ -61,9 +61,10 @@ export const getVotesList = cache(
   (): Promise<Vote[]> => readJSON("votes_list.json", []),
 );
 
-export const getEnrichedVotes = cache(
-  (): Promise<EnrichedVote[]> => readJSON("votes_enriched.json", []),
-);
+// (getEnrichedVotes — the bulk reader — was removed. With ~10k per-vote
+// files now, reading them all is ~80 MB of JSON parsing per request. Use
+// getEnrichedVote(id) for a single vote, which is what callers actually
+// need.)
 
 export const getMemberVotes = cache(
   async (id: number): Promise<MemberVote[]> => {
@@ -105,8 +106,15 @@ export const getVote = cache(async (id: number): Promise<Vote | null> => {
 
 export const getEnrichedVote = cache(
   async (id: number): Promise<EnrichedVote | null> => {
-    const all = await getEnrichedVotes();
-    return all.find((v) => v.id === id) ?? null;
+    try {
+      const txt = await fs.readFile(
+        path.join(DATA_DIR, "votes_enriched", `${id}.json`),
+        "utf-8",
+      );
+      return JSON.parse(txt) as EnrichedVote;
+    } catch {
+      return null;
+    }
   },
 );
 

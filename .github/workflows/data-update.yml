@@ -1,0 +1,79 @@
+name: Update data from oda.ft.dk
+
+# Runs once per day at 04:00 UTC (06:00 Danish time outside DST), and can
+# be triggered manually from the Actions tab. The job pulls fresh data
+# from Folketinget's open API, regenerates derived files, scrapes any
+# missing portraits, and commits the result so Vercel auto-deploys.
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch: {}
+
+# Prevent overlapping runs (e.g. a manual run while the cron is still going)
+concurrency:
+  group: data-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Default GITHUB_TOKEN is fine — we only push to the same repo.
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: pipeline/requirements.txt
+
+      - name: Install pipeline dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      # 1) Fetch fresh raw data from oda.ft.dk
+      - name: Fetch raw data
+        run: python -m pipeline.fetch_all
+        # We don't fail the whole workflow if a single fetcher gives us a
+        # transient error — preprocess still works against whatever we
+        # already have on disk.
+        continue-on-error: false
+
+      # 2) Re-derive all the JSON files the site reads at runtime
+      - name: Run preprocess
+        run: python -m pipeline.preprocess
+
+      # 3) Pull any new MF photos via politikdata.dk's image proxy
+      #    (idempotent — skips files that already exist).
+      - name: Refresh portraits
+        run: python -m pipeline.scrape_photos
+        continue-on-error: true
+
+      # 4) Show a summary in the Actions UI for quick auditing
+      - name: Show data status
+        run: |
+          echo "## Data status" >> $GITHUB_STEP_SUMMARY
+          ls -la public/data/*.json | head -30 >> $GITHUB_STEP_SUMMARY || true
+          echo "Photo count: $(ls public/photos 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+
+      # 5) Commit + push only if something actually changed.
+      - name: Commit and push if changed
+        run: |
+          git config user.name "magtinformation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/data public/photos
+          if git diff --cached --quiet; then
+            echo "Ingen ændringer — springer commit over."
+          else
+            git commit -m "data: opdater fra oda.ft.dk ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+            git push
+          fi

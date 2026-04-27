@@ -1,0 +1,18 @@
+{
+  "updated_at": "2026-04-25T20:20:11Z",
+  "sources": [
+    "votes",
+    "stemmer",
+    "members",
+    "cases",
+    "case_steps",
+    "meetings",
+    "agenda_items",
+    "periods",
+    "topics",
+    "vote_case_actors",
+    "vote_actors",
+    "meeting_actors",
+    "emneord_sag"
+  ]
+}

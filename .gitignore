@@ -9,13 +9,27 @@ __pycache__/
 *.pyc
 .venv/
 
-# Pipeline data (large; regenerate via pipeline)
-public/data/*.json
-!public/data/governments.json
-!public/data/parties.json
+# Raw pipeline-only data (huge; regenerated daily by GitHub Action and
+# never read directly by the Next.js app — only by pipeline/preprocess).
+public/data/actor_relations.json
+public/data/agenda_items.json
+public/data/cases.json
+public/data/case_steps.json
+public/data/emneord_sag.json
+public/data/meeting_actors.json
+public/data/meetings.json
+public/data/meetings_list.json
+public/data/members.json
+public/data/periods.json
+public/data/stemmer.json
+public/data/topics.json
+public/data/votes.json
+public/data/vote_case_actors.json
 public/data/meetings/
-public/data/member_votes/
-public/photos/
+
+# Site-side derived data + photos are committed so Vercel deploys them.
+# (Daily GitHub Action regenerates and pushes new versions.)
+
 pipeline/logs/
 
 # Editors / OS

@@ -756,7 +756,12 @@ def build_votes_enriched(
     _cases_by_id: dict[int, dict] | None = None,
     _sagstrin_to_sagid: dict[int, int] | None = None,
 ) -> list[dict]:
-    """Build enriched vote objects with stemmer, case titles, counts."""
+    """Build enriched vote objects with stemmer, case titles, counts.
+
+    Pass `n_votes=0` (or any non-positive number) to enrich ALL votes that
+    have stemmer data — used when we want per-vote files for every
+    historical vote rather than just the recent N.
+    """
 
     # Use pre-built indexes if provided (avoids duplicate work)
     cases_by_id: dict[int, dict] = _cases_by_id or {c["id"]: c for c in cases}
@@ -774,7 +779,7 @@ def build_votes_enriched(
         for s in tqdm(stemmer, desc="Grouping stemmer", ncols=80):
             stemmer_by_vote[s["afstemningid"]].append(s)
 
-    # Sort votes by date descending, take most recent n_votes
+    # Sort votes by date descending so the recent ones come first when capped.
     sorted_votes = sorted(
         votes,
         key=lambda v: v.get("opdateringsdato") or "",
@@ -784,8 +789,9 @@ def build_votes_enriched(
     # Only keep votes that have stemmer
     enriched: list[dict] = []
     count = 0
+    no_cap = n_votes <= 0
     for vote in tqdm(sorted_votes, desc="Enriching votes", ncols=80):
-        if count >= n_votes:
+        if not no_cap and count >= n_votes:
             break
         vote_stemmer = stemmer_by_vote.get(vote["id"])
         if not vote_stemmer:
@@ -1628,7 +1634,12 @@ def build_member_vote_history(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Preprocess pipeline data for frontend")
-    parser.add_argument("--votes", type=int, default=2000, help="Number of recent enriched votes (for hemicycle)")
+    parser.add_argument(
+        "--votes",
+        type=int,
+        default=0,
+        help="Cap enriched votes (default: 0 = all). Use a small number for fast dev runs.",
+    )
     args = parser.parse_args()
 
     # ── Load raw source files ─────────────────────────────────────────────────
@@ -1746,6 +1757,9 @@ def main() -> None:
                 tagged += 1
         print(f"  → {tagged}/{len(votes_list)} votes tagged with topics")
 
+    # Enrich ALL votes by default (args.votes=0). Pass a positive number to
+    # cap for fast dev runs. Per-vote pages need this so historical votes
+    # show party breakdowns too.
     print("\nBuilding enriched votes (hemicycle)…")
     enriched = build_votes_enriched(
         votes, stemmer, cases, case_steps, member_by_id, processed_members, args.votes,
@@ -1863,10 +1877,33 @@ def main() -> None:
     )
     print(f"  → votes_list.json ({len(votes_list)} votes)")
 
-    (DATA_DIR / "votes_enriched.json").write_text(
-        json.dumps(enriched, ensure_ascii=False), encoding="utf-8",
+    # Write enriched votes as ONE file per vote so the site can read just
+    # the one it needs (avoids parsing a 60+ MB JSON for every detail page
+    # render once we cover all historical votes). Stale files for votes
+    # that no longer exist are pruned.
+    enriched_dir = DATA_DIR / "votes_enriched"
+    enriched_dir.mkdir(exist_ok=True)
+    seen_ids: set[int] = set()
+    for ev in enriched:
+        seen_ids.add(ev["id"])
+        (enriched_dir / f"{ev['id']}.json").write_text(
+            json.dumps(ev, ensure_ascii=False), encoding="utf-8",
+        )
+    pruned = 0
+    for old in enriched_dir.glob("*.json"):
+        try:
+            if int(old.stem) not in seen_ids:
+                old.unlink()
+                pruned += 1
+        except ValueError:
+            continue
+    # Remove the legacy single-blob file if it lingers from older runs.
+    legacy = DATA_DIR / "votes_enriched.json"
+    if legacy.exists():
+        legacy.unlink()
+    print(
+        f"  → votes_enriched/ ({len(enriched)} files, {pruned} stale removed)"
     )
-    print(f"  → votes_enriched.json ({len(enriched)} enriched votes)")
 
     print("\nBuilding case summaries…")
     case_summaries = build_case_summaries(
