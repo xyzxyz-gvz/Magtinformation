@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+from pipeline.fetchers._io import write_records
 from pipeline.fetchers.base import ODataFetcher
 from pipeline.transformers.normalize import normalize_records
 
@@ -29,8 +30,8 @@ def fetch_periods(
         desc="Perioder (parliamentary periods)",
     )
     normalized = normalize_records(records)
-    _write(out_dir / "periods.json", normalized)
-    logger.info("periods.json: %d records", len(normalized))
+    total = write_records(out_dir / "periods.json", normalized, merge=since is not None)
+    logger.info("periods.json: %d new/updated, %d on disk", len(normalized), total)
 
 
 def fetch_topics(
@@ -46,8 +47,8 @@ def fetch_topics(
         desc="Emneord (topics)",
     )
     normalized = normalize_records(records)
-    _write(out_dir / "topics.json", normalized)
-    logger.info("topics.json: %d records", len(normalized))
+    total = write_records(out_dir / "topics.json", normalized, merge=since is not None)
+    logger.info("topics.json: %d new/updated, %d on disk", len(normalized), total)
 
 
 def fetch_emneord_sag(
@@ -67,11 +68,5 @@ def fetch_emneord_sag(
         desc="EmneordSag (topic↔case links)",
     )
     normalized = normalize_records(records)
-    _write(out_dir / "emneord_sag.json", normalized)
-    logger.info("emneord_sag.json: %d records", len(normalized))
-
-
-def _write(path: Path, data: list[dict]) -> None:
-    import json
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=None, separators=(",", ":")), encoding="utf-8")
+    total = write_records(out_dir / "emneord_sag.json", normalized, merge=since is not None)
+    logger.info("emneord_sag.json: %d new/updated, %d on disk", len(normalized), total)

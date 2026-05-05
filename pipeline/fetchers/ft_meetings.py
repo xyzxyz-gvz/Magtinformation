@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+from pipeline.fetchers._io import write_records
 from pipeline.fetchers.base import ODataFetcher
 from pipeline.transformers.normalize import normalize_records
 
@@ -29,8 +30,8 @@ def fetch_meetings(
         desc="Møder (meetings)",
     )
     normalized = normalize_records(records)
-    _write(out_dir / "meetings.json", normalized)
-    logger.info("meetings.json: %d records", len(normalized))
+    total = write_records(out_dir / "meetings.json", normalized, merge=since is not None)
+    logger.info("meetings.json: %d new/updated, %d on disk", len(normalized), total)
 
 
 def fetch_agenda_items(
@@ -46,11 +47,5 @@ def fetch_agenda_items(
         desc="Dagsordenspunkter (agenda)",
     )
     normalized = normalize_records(records)
-    _write(out_dir / "agenda_items.json", normalized)
-    logger.info("agenda_items.json: %d records", len(normalized))
-
-
-def _write(path: Path, data: list[dict]) -> None:
-    import json
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=None, separators=(",", ":")), encoding="utf-8")
+    total = write_records(out_dir / "agenda_items.json", normalized, merge=since is not None)
+    logger.info("agenda_items.json: %d new/updated, %d on disk", len(normalized), total)

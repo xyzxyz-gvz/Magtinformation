@@ -21,7 +21,10 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # First run after deploy is a cold full fetch (~3-5h, ~1.8M Stemme
+    # records alone). Subsequent runs are incremental and finish in <15min.
+    # GitHub free tier caps jobs at 6h.
+    timeout-minutes: 350
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,17 +43,110 @@ jobs:
       - name: Install pipeline dependencies
         run: pip install -r pipeline/requirements.txt
 
-      # 1) Fetch fresh raw data from oda.ft.dk
+      # 1a) Restore the previous run's raw JSON files from cache.
+      #
+      # Raw files (cases.json, stemmer.json, …) are gitignored because
+      # they're huge (340MB+ for stemmer alone). They live in the GH
+      # Actions cache between runs so incremental fetches have something
+      # to merge new records into. First run finds an empty cache → the
+      # SINCE step below detects missing raw files and forces full fetch.
+      - name: Restore raw data cache
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            public/data/cases.json
+            public/data/case_steps.json
+            public/data/stemmer.json
+            public/data/votes.json
+            public/data/members.json
+            public/data/actor_relations.json
+            public/data/meetings.json
+            public/data/agenda_items.json
+            public/data/meeting_actors.json
+            public/data/vote_case_actors.json
+            public/data/topics.json
+            public/data/emneord_sag.json
+            public/data/periods.json
+          key: raw-data-${{ github.run_id }}
+          restore-keys: |
+            raw-data-
+
+      # 1b) Compute the --since date for an incremental fetch.
+      #
+      # Only go incremental if BOTH meta.json AND the big raw files exist
+      # on disk — otherwise we'd merge new records into nothing and end
+      # up with partial data. Missing files → empty SINCE → full fetch.
+      - name: Compute incremental --since date
+        id: since
+        run: |
+          SINCE=""
+          if [ -f public/data/meta.json ] \
+            && [ -f public/data/cases.json ] \
+            && [ -f public/data/stemmer.json ] \
+            && [ -f public/data/members.json ]; then
+            SINCE=$(python3 - <<'PY'
+          import json
+          from datetime import datetime, timedelta
+          try:
+              meta = json.load(open("public/data/meta.json"))
+              last = meta.get("updated_at")
+              if last:
+                  last = last.replace("Z", "+00:00")
+                  dt = datetime.fromisoformat(last) - timedelta(days=2)
+                  print(dt.strftime("%Y-%m-%d"))
+          except Exception:
+              pass
+          PY
+            )
+          fi
+          echo "value=$SINCE" >> "$GITHUB_OUTPUT"
+          if [ -n "$SINCE" ]; then
+            echo "Incremental fetch since $SINCE"
+          else
+            echo "No raw-data cache yet — falling back to full fetch"
+          fi
+
+      # 1c) Fetch raw data from oda.ft.dk. Incremental when --since is set;
+      # the fetchers merge new/updated records into the existing JSON files
+      # so historical data is preserved.
       - name: Fetch raw data
-        run: python -m pipeline.fetch_all
-        # We don't fail the whole workflow if a single fetcher gives us a
-        # transient error — preprocess still works against whatever we
-        # already have on disk.
+        id: fetch
+        run: |
+          if [ -n "${{ steps.since.outputs.value }}" ]; then
+            python -m pipeline.fetch_all --since "${{ steps.since.outputs.value }}"
+          else
+            python -m pipeline.fetch_all
+          fi
         continue-on-error: false
 
       # 2) Re-derive all the JSON files the site reads at runtime
       - name: Run preprocess
+        id: preprocess
         run: python -m pipeline.preprocess
+
+      # 2b) Save raw data cache only if both fetch AND preprocess succeeded.
+      # A cancelled/failed run leaves the cache untouched so the next run
+      # restores the last known-good snapshot (or falls back to full fetch).
+      - name: Save raw data cache
+        if: success() && steps.fetch.outcome == 'success' && steps.preprocess.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            public/data/cases.json
+            public/data/case_steps.json
+            public/data/stemmer.json
+            public/data/votes.json
+            public/data/members.json
+            public/data/actor_relations.json
+            public/data/meetings.json
+            public/data/agenda_items.json
+            public/data/meeting_actors.json
+            public/data/vote_case_actors.json
+            public/data/topics.json
+            public/data/emneord_sag.json
+            public/data/periods.json
+          key: raw-data-${{ github.run_id }}
 
       # 3) Pull any new MF photos via politikdata.dk's image proxy
       #    (idempotent — skips files that already exist).
