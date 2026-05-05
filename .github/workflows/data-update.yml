@@ -3,7 +3,7 @@ name: Update data from oda.ft.dk
 # Runs once per day at 04:00 UTC (06:00 Danish time outside DST), and can
 # be triggered manually from the Actions tab. The job pulls fresh data
 # from Folketinget's open API, regenerates derived files, scrapes any
-# missing portraits, and commits the result so Vercel auto-deploys.
+# missing portraits, and commits the result back to the repo.
 
 on:
   schedule:
