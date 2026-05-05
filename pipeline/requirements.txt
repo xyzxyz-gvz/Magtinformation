@@ -3,3 +3,8 @@ tqdm>=4.66.0
 beautifulsoup4>=4.12.0
 pydantic>=2.0.0
 psycopg2-binary>=2.9.0
+# PDF rendering for the partiregnskaber scraper. The partiregnskab PDFs
+# from ft.dk have no text layer (image-only with custom font encoding), so
+# we render pages to PNG and pipe through tesseract OCR (system binary,
+# language pack 'dan').
+pymupdf>=1.24.0

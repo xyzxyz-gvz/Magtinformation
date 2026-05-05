@@ -12,6 +12,9 @@ import type {
   MemberVote,
   Party,
   PartyAgreement,
+  PartyFinanceMeta,
+  PartyFinanceYear,
+  PartyFinancesFile,
   Vote,
 } from "./types";
 
@@ -175,6 +178,32 @@ export const getMemberPartyHistory = cache(
       "member_party_history.json",
       {} as Record<string, MemberPartyHistory>,
     ),
+);
+
+export const getPartyFinancesFile = cache(
+  (): Promise<PartyFinancesFile> =>
+    readJSON("party_finances.json", {} as PartyFinancesFile),
+);
+
+export const getPartyFinances = cache(
+  async (
+    partyShort: string,
+  ): Promise<{
+    years: { year: string; data: PartyFinanceYear }[];
+    meta: PartyFinanceMeta | null;
+  }> => {
+    const all = await getPartyFinancesFile();
+    const meta = (all._meta as PartyFinanceMeta | undefined) ?? null;
+    const entry = all[partyShort];
+    if (!entry || partyShort === "_meta") {
+      return { years: [], meta };
+    }
+    const yearsObj = entry as Record<string, PartyFinanceYear>;
+    const years = Object.entries(yearsObj)
+      .map(([year, data]) => ({ year, data }))
+      .sort((a, b) => b.year.localeCompare(a.year));
+    return { years, meta };
+  },
 );
 
 export type GovernmentMemberEntry = { id: number; votes: number };

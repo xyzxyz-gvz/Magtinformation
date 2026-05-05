@@ -154,6 +154,49 @@ export type PartyAgreement = {
   shared: number[][];
 };
 
+export type PartyFinanceDonor = {
+  name: string;
+  /** company / union / association / fund / person */
+  type: "company" | "union" | "association" | "fund" | "person";
+  /** How the donation was given. Optional for backwards-compat with older
+   *  records; missing values are displayed as plain "monetary". */
+  kind?: "monetary" | "in_kind" | "partiskat";
+  /** Stated value in t.kr. — rarely available except for in-kind
+   *  donations where the party puts a number on it. */
+  amount?: number | null;
+  /** Free-form qualifier ("mødefaciliteter", "lokaler", etc.) */
+  note?: string | null;
+};
+
+export type PartyFinanceYear = {
+  /** All amounts are in 1.000 DKK (t.kr.) as published. */
+  offentligPartistotte: number | null;
+  medlemskontingenter: number | null;
+  privatePersoner: number | null;
+  organisationer: number | null;
+  andreIndtaegter: number | null;
+  indtaegterTotal: number | null;
+  udgifterTotal: number | null;
+  aaretsResultat: number | null;
+  egenkapital: number | null;
+  anonymeTilskud: number | null;
+  donors: PartyFinanceDonor[];
+};
+
+export type PartyFinanceMeta = {
+  source: string;
+  url: string;
+  currency: string;
+  unit: string;
+  note: string;
+};
+
+/** Map of partyShort → year → finance data. The "_meta" key holds source info. */
+export type PartyFinancesFile = Record<
+  string,
+  Record<string, PartyFinanceYear> | PartyFinanceMeta
+>;
+
 export type PartyTimelineEntry = {
   partyShort: string;
   partyName: string;

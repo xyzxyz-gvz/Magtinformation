@@ -7,6 +7,7 @@ import {
   PartyVotesExplorer,
   type PartyVoteRow,
 } from "@/components/PartyVotesExplorer";
+import { PartyFinances } from "@/components/PartyFinances";
 import { ProfileTabs, type TabSpec } from "@/components/ProfileTabs";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import {
   getMembers,
   getParties,
   getPartyAgreement,
+  getPartyFinances,
   getVoteMajorities,
   getVoteTopics,
   getVotesList,
@@ -55,7 +57,7 @@ export default async function PartyDetail({
   const sp = await searchParams;
   const govSlug = sp.gov ?? "";
 
-  const [parties, members, governments, votes, majorities, agreement, voteTopics] =
+  const [parties, members, governments, votes, majorities, agreement, voteTopics, finances] =
     await Promise.all([
       getParties(),
       getMembers(),
@@ -64,6 +66,7 @@ export default async function PartyDetail({
       getVoteMajorities(),
       getPartyAgreement(),
       getVoteTopics(),
+      getPartyFinances(short),
     ]);
 
   const party = parties.find((p) => p.short === short);
@@ -102,21 +105,44 @@ export default async function PartyDetail({
 
   // Closest / furthest parties — agreement matrix is all-time only.
   // (Per-period agreement would require recomputing, which is heavy.)
-  type Allyrow = { short: string; agreement: number; shared: number };
-  let closest: Allyrow[] = [];
-  let furthest: Allyrow[] = [];
+  // We pre-build display strings here so AllyList doesn't need any lookups
+  // or locale-formatters — the rows it receives are already render-ready,
+  // which avoids hydration mismatches when this lives inside ProfileTabs.
+  let closest: AllyListItem[] = [];
+  let furthest: AllyListItem[] = [];
   if (agreement) {
     const i = agreement.parties.indexOf(short);
     if (i >= 0) {
-      const rows: Allyrow[] = agreement.parties
+      type Raw = { short: string; agreement: number; shared: number };
+      const raw: Raw[] = agreement.parties
         .map((p, j) => ({
           short: p,
           agreement: agreement.matrix[i][j] ?? 0,
           shared: agreement.shared[i][j] ?? 0,
         }))
         .filter((r) => r.short !== short && r.shared >= 200);
-      closest = [...rows].sort((a, b) => b.agreement - a.agreement).slice(0, 5);
-      furthest = [...rows].sort((a, b) => a.agreement - b.agreement).slice(0, 5);
+
+      const toItem = (r: Raw): AllyListItem => {
+        const p = partyByShort.get(r.short);
+        return {
+          short: r.short,
+          navn: p?.navn ?? r.short,
+          color: p?.color ?? "#888",
+          letter: p?.letter ?? "?",
+          partyOrder: p?.left_order ?? 99,
+          agreementPct: (r.agreement * 100).toFixed(1),
+          sharedFormatted: formatThousands(r.shared),
+        };
+      };
+
+      closest = [...raw]
+        .sort((a, b) => b.agreement - a.agreement)
+        .slice(0, 5)
+        .map(toItem);
+      furthest = [...raw]
+        .sort((a, b) => a.agreement - b.agreement)
+        .slice(0, 5)
+        .map(toItem);
     }
   }
 
@@ -185,6 +211,11 @@ export default async function PartyDetail({
     { id: "stemmer", label: "Stemmer", count: partyVoteRows.length },
     { id: "emner", label: "Emner", count: topicByVolume.length },
     { id: "medlemmer", label: "Medlemmer" },
+    {
+      id: "okonomi",
+      label: "Økonomi",
+      count: finances.years.length || null,
+    },
   ];
 
   return (
@@ -264,16 +295,8 @@ export default async function PartyDetail({
 
                 {(closest.length > 0 || furthest.length > 0) && (
                   <section className="grid gap-6 md:grid-cols-2">
-                    <AllyList
-                      title="Stemmer mest med"
-                      rows={closest}
-                      partyByShort={partyByShort}
-                    />
-                    <AllyList
-                      title="Stemmer mindst med"
-                      rows={furthest}
-                      partyByShort={partyByShort}
-                    />
+                    <AllyList title="Stemmer mest med" rows={closest} />
+                    <AllyList title="Stemmer mindst med" rows={furthest} />
                     <p className="text-xs text-[var(--color-muted)] md:col-span-2">
                       Beregnet på alle delte afstemninger i datasættet — ikke
                       filtreret af regering ovenfor.
@@ -436,6 +459,16 @@ export default async function PartyDetail({
               </section>
             ),
           },
+          {
+            id: "okonomi",
+            node: (
+              <PartyFinances
+                partyName={party.navn}
+                years={finances.years}
+                meta={finances.meta}
+              />
+            ),
+          },
         ]}
       />
     </div>
@@ -500,14 +533,29 @@ function GovFilter({
   );
 }
 
+type AllyListItem = {
+  short: string;
+  navn: string;
+  color: string;
+  letter: string;
+  partyOrder: number;
+  agreementPct: string;
+  sharedFormatted: string;
+};
+
+/** Format an integer with Danish thousand-separators ("1234567" → "1.234.567")
+ *  without using toLocaleString — Node and browser ICU data can disagree on
+ *  the exact output, which causes hydration mismatches. */
+function formatThousands(n: number): string {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function AllyList({
   title,
   rows,
-  partyByShort,
 }: {
   title: string;
-  rows: { short: string; agreement: number; shared: number }[];
-  partyByShort: Map<string, { navn: string; color: string; letter: string; short: string; left_order: number }>;
+  rows: AllyListItem[];
 }) {
   return (
     <div>
@@ -515,28 +563,34 @@ function AllyList({
         {title}
       </h2>
       <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
-        {rows.map((r) => {
-          const p = partyByShort.get(r.short);
-          return (
-            <li key={r.short}>
-              <Link
-                href={`/parties/${r.short}`}
-                className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
-              >
-                <div className="flex items-center gap-2">
-                  <PartyBadge party={p} size="sm" />
-                  <span className="text-sm">{p?.navn ?? r.short}</span>
-                </div>
-                <div className="text-sm tabular-nums">
-                  {(r.agreement * 100).toFixed(1)}%
-                  <span className="ml-1 text-xs text-[var(--color-muted)]">
-                    / {r.shared.toLocaleString("da-DK")}
-                  </span>
-                </div>
-              </Link>
-            </li>
-          );
-        })}
+        {rows.map((r) => (
+          <li key={r.short}>
+            <Link
+              href={`/parties/${r.short}`}
+              className="flex items-center justify-between gap-3 py-2 hover:bg-[var(--color-soft)]"
+            >
+              <div className="flex items-center gap-2">
+                <PartyBadge
+                  party={{
+                    short: r.short,
+                    navn: r.navn,
+                    color: r.color,
+                    letter: r.letter,
+                    left_order: r.partyOrder,
+                  }}
+                  size="sm"
+                />
+                <span className="text-sm">{r.navn}</span>
+              </div>
+              <div className="text-sm tabular-nums">
+                {r.agreementPct}%
+                <span className="ml-1 text-xs text-[var(--color-muted)]">
+                  / {r.sharedFormatted}
+                </span>
+              </div>
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   );

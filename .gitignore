@@ -31,6 +31,7 @@ public/data/meetings/
 # (Daily GitHub Action regenerates and pushes new versions.)
 
 pipeline/logs/
+pipeline/data/
 
 # Editors / OS
 .vscode/

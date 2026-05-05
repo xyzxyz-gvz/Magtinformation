@@ -1,0 +1,1577 @@
+{
+  "_meta": {
+    "source": "Folketinget — De politiske partiers regnskaber (2019–2024)",
+    "url": "https://www.ft.dk/da/dokumenter/dokumentlister/partiregnskaber",
+    "currency": "DKK",
+    "unit": "1000",
+    "note": "Alle tal er i tusinde kroner (t.kr.) som de står i de offentliggjorte regnskaber. Regnskaberne dækker partiets landsorganisation."
+  },
+  "S": {
+    "2024": {
+      "offentligPartistotte": 35963,
+      "medlemskontingenter": 4553,
+      "privatePersoner": 27,
+      "organisationer": 360,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 53884,
+      "udgifterTotal": 48740,
+      "aaretsResultat": 5466,
+      "egenkapital": 30565,
+      "andreIndtaegter": 13780,
+      "donors": [
+        { "name": "HK", "type": "union", "kind": "in_kind", "amount": 80, "note": "Mødefaciliteter, Weidekampsgade 8" },
+        { "name": "Danske Rederier", "type": "association", "kind": "monetary", "note": "Amaliegade 33" },
+        { "name": "NNF (Fødevareforbundet)", "type": "union", "kind": "monetary", "note": "Molestien 7" },
+        { "name": "Ane Halsboe-Jørgensen", "type": "person", "kind": "partiskat" },
+        { "name": "Dan Jørgensen", "type": "person", "kind": "partiskat" },
+        { "name": "Kaare Dybvad Bek", "type": "person", "kind": "partiskat" },
+        { "name": "Magnus Heunicke", "type": "person", "kind": "partiskat" },
+        { "name": "Mattias Tesfaye", "type": "person", "kind": "partiskat" },
+        { "name": "Mette Frederiksen", "type": "person", "kind": "partiskat" },
+        { "name": "Morten Bødskov", "type": "person", "kind": "partiskat" },
+        { "name": "Pernille Rosenkrantz-Theil", "type": "person", "kind": "partiskat" }
+      ]
+    },
+    "2023": {
+      "offentligPartistotte": 34748,
+      "medlemskontingenter": 4762,
+      "privatePersoner": null,
+      "organisationer": 200,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 49554,
+      "udgifterTotal": 40376,
+      "aaretsResultat": 9548,
+      "egenkapital": 25099,
+      "andreIndtaegter": 3565,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 31792,
+      "medlemskontingenter": 5124,
+      "privatePersoner": null,
+      "organisationer": 19707,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 68341,
+      "udgifterTotal": 74350,
+      "aaretsResultat": 6100,
+      "egenkapital": 15551,
+      "andreIndtaegter": 3185,
+      "donors": []
+    },
+    "2021": {
+      "offentligPartistotte": 31563,
+      "medlemskontingenter": 5332,
+      "privatePersoner": 148,
+      "organisationer": 250,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 45085,
+      "udgifterTotal": 39817,
+      "aaretsResultat": 5105,
+      "egenkapital": 21631,
+      "andreIndtaegter": 39752,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": 30649,
+      "medlemskontingenter": 5163,
+      "privatePersoner": 7,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 39886,
+      "udgifterTotal": 33575,
+      "aaretsResultat": 6218,
+      "egenkapital": 16526,
+      "andreIndtaegter": 34723,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": 30523,
+      "medlemskontingenter": 5178,
+      "privatePersoner": 1011,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 57692,
+      "udgifterTotal": 74642,
+      "aaretsResultat": 0,
+      "egenkapital": 10308,
+      "andreIndtaegter": 2018,
+      "donors": []
+    }
+  },
+  "V": {
+    "2024": {
+      "offentligPartistotte": 17410,
+      "medlemskontingenter": 2490,
+      "privatePersoner": 32,
+      "organisationer": 5794,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 29934,
+      "aaretsResultat": 114,
+      "egenkapital": 37573,
+      "andreIndtaegter": 2,
+      "donors": [
+        {
+          "name": "Erhvervsnetværket Danmark",
+          "type": "person"
+        }
+      ]
+    },
+    "2023": {
+      "offentligPartistotte": 16822,
+      "medlemskontingenter": 2560,
+      "privatePersoner": 55,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 17272,
+      "aaretsResultat": 25,
+      "egenkapital": 5343,
+      "andreIndtaegter": 2,
+      "donors": [
+        {
+          "name": "Den Liberale Erhvervsforening",
+          "type": "person"
+        },
+        {
+          "name": "Den liberale Erhvervskiub",
+          "type": "person"
+        },
+        {
+          "name": "Arsrapport",
+          "type": "person"
+        }
+      ]
+    },
+    "2022": {
+      "offentligPartistotte": 28709,
+      "medlemskontingenter": 3187,
+      "privatePersoner": 0,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 58739,
+      "aaretsResultat": 1,
+      "egenkapital": 24619,
+      "andreIndtaegter": 2,
+      "donors": [
+        {
+          "name": "Alfred Pedersen & Søn Bellinge A/S",
+          "type": "company"
+        },
+        {
+          "name": "Arp - Hansen Group A/S",
+          "type": "company"
+        },
+        {
+          "name": "Den Liberale ErhvervsForening",
+          "type": "person"
+        },
+        {
+          "name": "; Den Liberale ErhvervsKlub",
+          "type": "person"
+        },
+        {
+          "name": "Kjeld Kirk Kristiansen",
+          "type": "person"
+        },
+        {
+          "name": "LIND Invest ApS",
+          "type": "company"
+        },
+        {
+          "name": "Uhrenholt A/S",
+          "type": "company"
+        }
+      ]
+    },
+    "2021": {
+      "offentligPartistotte": 28502,
+      "medlemskontingenter": 3457,
+      "privatePersoner": 0,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 29166,
+      "aaretsResultat": 68,
+      "egenkapital": 68,
+      "andreIndtaegter": 2,
+      "donors": [
+        {
+          "name": "e Den Liberale ErhvervsForening",
+          "type": "person"
+        },
+        {
+          "name": "Den Liberale ErhvervsKlub",
+          "type": "person"
+        },
+        {
+          "name": "Sønderupiii",
+          "type": "person"
+        },
+        {
+          "name": "FevIsSorer",
+          "type": "person"
+        },
+        {
+          "name": "DK-4100 Ringsted DK-2665 Vallensbæk",
+          "type": "person"
+        },
+        {
+          "name": "(<a",
+          "type": "person"
+        },
+        {
+          "name": "(I FF",
+          "type": "person"
+        },
+        {
+          "name": "ARSREGNSKAB 2021",
+          "type": "person"
+        },
+        {
+          "name": "STATSAUTOALISEREDE eee EET",
+          "type": "person"
+        },
+        {
+          "name": "SE BD ROGER RR ORNE BE",
+          "type": "person"
+        },
+        {
+          "name": "Indholdsfortegnelse",
+          "type": "person"
+        },
+        {
+          "name": "Ledelsespåtegning 3",
+          "type": "person"
+        },
+        {
+          "name": "Den uafhængige revisors revisionspåtegning 4",
+          "type": "person"
+        }
+      ]
+    },
+    "2020": {
+      "offentligPartistotte": 27676,
+      "medlemskontingenter": 3440,
+      "privatePersoner": 0,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 29811,
+      "aaretsResultat": 82,
+      "egenkapital": 82,
+      "andreIndtaegter": 2,
+      "donors": [
+        {
+          "name": "Den Liberale ErhvervsForening",
+          "type": "person"
+        },
+        {
+          "name": "Den Liberale ErhvervsKlub",
+          "type": "person"
+        }
+      ]
+    },
+    "2019": {
+      "offentligPartistotte": 22611,
+      "medlemskontingenter": 3440,
+      "privatePersoner": 1179,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 51789,
+      "aaretsResultat": null,
+      "egenkapital": null,
+      "andreIndtaegter": 2,
+      "donors": [
+        {
+          "name": "s Arp-Hansen Hotel Group A/S",
+          "type": "company"
+        },
+        {
+          "name": "s B. L. Finans ApS",
+          "type": "company"
+        },
+        {
+          "name": "s Den Liberale ErhvervsForening",
+          "type": "person"
+        },
+        {
+          "name": "e Den Liberale ErhvervsKlub",
+          "type": "person"
+        },
+        {
+          "name": "FOSS A/S",
+          "type": "company"
+        },
+        {
+          "name": "s T & W Holding A/S",
+          "type": "company"
+        },
+        {
+          "name": "e Techno Ejendomme ApS",
+          "type": "company"
+        },
+        {
+          "name": "s TEKNIQ Installatørernes Organisation",
+          "type": "person"
+        }
+      ]
+    }
+  },
+  "DF": {
+    "2024": {
+      "offentligPartistotte": 3456,
+      "medlemskontingenter": null,
+      "privatePersoner": 23,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 6708,
+      "udgifterTotal": null,
+      "aaretsResultat": 1370,
+      "egenkapital": 4588,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Emvervspolitiske Vollgfond SÅ 170.0090 0",
+          "type": "fund"
+        },
+        {
+          "name": "Renter",
+          "type": "person"
+        },
+        {
+          "name": "å EU-oplysningsmidler",
+          "type": "person"
+        },
+        {
+          "name": "Overført fra tidligere år 2 17",
+          "type": "person"
+        },
+        {
+          "name": "Der er indgået huslejekontrakt med 6 måneders opsigelke",
+          "type": "person"
+        }
+      ]
+    },
+    "2023": {
+      "offentligPartistotte": 3340,
+      "medlemskontingenter": null,
+      "privatePersoner": 22,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 4604,
+      "aaretsResultat": 1101,
+      "egenkapital": 3217,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Tilskud fra internationale organisationer",
+          "type": "person"
+        },
+        {
+          "name": "sammenslufninger",
+          "type": "person"
+        },
+        {
+          "name": "foreninger mv",
+          "type": "person"
+        },
+        {
+          "name": "Modtaget fra Europa Nævnet 640",
+          "type": "person"
+        },
+        {
+          "name": "Overført fra tidligere år 171.533",
+          "type": "person"
+        },
+        {
+          "name": "Skyldig 99",
+          "type": "person"
+        },
+        {
+          "name": "og FELD",
+          "type": "person"
+        },
+        {
+          "name": "Side if",
+          "type": "person"
+        },
+        {
+          "name": "digital underskrift Underskrivernes identiteter er blevet registreret",
+          "type": "person"
+        },
+        {
+          "name": "Morten Messerschmidt Navnet er skjult",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesformand Næstformand",
+          "type": "person"
+        },
+        {
+          "name": "Morten Skovbjerg Kristiansen",
+          "type": "person"
+        },
+        {
+          "name": "Statsautoriseret revisor 3",
+          "type": "person"
+        },
+        {
+          "name": "FE: BLA I KMKKKE urt",
+          "type": "person"
+        },
+        {
+          "name": "+ 2 Fe",
+          "type": "person"
+        },
+        {
+          "name": "km\"",
+          "type": "person"
+        },
+        {
+          "name": "[ul",
+          "type": "person"
+        },
+        {
+          "name": "Dette dokument er underskrevet digitalt vis Permeo",
+          "type": "person"
+        },
+        {
+          "name": "derine PDF",
+          "type": "person"
+        },
+        {
+          "name": "Sådan kan du sikre",
+          "type": "person"
+        }
+      ]
+    },
+    "2022": {
+      "offentligPartistotte": 10720,
+      "medlemskontingenter": 101,
+      "privatePersoner": 102,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 6177,
+      "egenkapital": 2116,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": 10335,
+      "medlemskontingenter": 879,
+      "privatePersoner": 46,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 687,
+      "egenkapital": 12522,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": 24477,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 2199,
+      "egenkapital": 11835,
+      "andreIndtaegter": null,
+      "donors": []
+    }
+  },
+  "RV": {
+    "2024": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 4849,
+      "udgifterTotal": 16979,
+      "aaretsResultat": 6966,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": 4788,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 1073,
+      "udgifterTotal": 25,
+      "aaretsResultat": null,
+      "egenkapital": 1798,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 10588,
+      "medlemskontingenter": 1423,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 21427,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 2568,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2021": {
+      "offentligPartistotte": 10512,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 14823,
+      "udgifterTotal": null,
+      "aaretsResultat": 409,
+      "egenkapital": 2321,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 1683,
+      "privatePersoner": 675,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 1126,
+      "udgifterTotal": null,
+      "aaretsResultat": 1873,
+      "egenkapital": 500,
+      "andreIndtaegter": 2,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": 5313,
+      "medlemskontingenter": 1499,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 745,
+      "egenkapital": 33,
+      "andreIndtaegter": 2,
+      "donors": []
+    }
+  },
+  "SF": {
+    "2024": {
+      "offentligPartistotte": 10847,
+      "medlemskontingenter": 2616,
+      "privatePersoner": 0,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 1962,
+      "egenkapital": 8310,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": 10481,
+      "medlemskontingenter": 2803,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 14078,
+      "udgifterTotal": null,
+      "aaretsResultat": 4107,
+      "egenkapital": 6348,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 9462,
+      "medlemskontingenter": 2263,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 12516,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 2240,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2021": {
+      "offentligPartistotte": 9394,
+      "medlemskontingenter": 2279,
+      "privatePersoner": 45,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 12432,
+      "udgifterTotal": 4524,
+      "aaretsResultat": 2009,
+      "egenkapital": 6353,
+      "andreIndtaegter": 4300,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": 9122,
+      "medlemskontingenter": 0,
+      "privatePersoner": 572,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 2367,
+      "udgifterTotal": 8539,
+      "aaretsResultat": 0,
+      "egenkapital": 4343,
+      "andreIndtaegter": 0,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": 0,
+      "medlemskontingenter": 2245,
+      "privatePersoner": 461234,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 7632,
+      "udgifterTotal": 2482,
+      "aaretsResultat": 0,
+      "egenkapital": null,
+      "andreIndtaegter": 2393,
+      "donors": []
+    }
+  },
+  "EL": {
+    "2024": {
+      "offentligPartistotte": 6713,
+      "medlemskontingenter": 8021,
+      "privatePersoner": 2586,
+      "organisationer": 2586,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 185622,
+      "udgifterTotal": 17220,
+      "aaretsResultat": 1438,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": 6486,
+      "medlemskontingenter": 7046,
+      "privatePersoner": 3011,
+      "organisationer": 3011,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 17187,
+      "udgifterTotal": 13871,
+      "aaretsResultat": 3395,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 8517,
+      "medlemskontingenter": 6378,
+      "privatePersoner": 3554,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 20066,
+      "udgifterTotal": 23987,
+      "aaretsResultat": 4344,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Den Almennvttiøe Fand Af",
+          "type": "person"
+        }
+      ]
+    },
+    "2021": {
+      "offentligPartistotte": 8455,
+      "medlemskontingenter": 6534,
+      "privatePersoner": 2802,
+      "organisationer": 2802,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 18559,
+      "udgifterTotal": 20045,
+      "aaretsResultat": 6668,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": 8210,
+      "medlemskontingenter": 0,
+      "privatePersoner": 2947,
+      "organisationer": 2947,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 18476,
+      "udgifterTotal": null,
+      "aaretsResultat": 3645,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": 9057,
+      "medlemskontingenter": 6363,
+      "privatePersoner": 0,
+      "organisationer": 0,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 20228,
+      "udgifterTotal": 20680,
+      "aaretsResultat": 6537,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    }
+  },
+  "KF": {
+    "2024": {
+      "offentligPartistotte": 7208,
+      "medlemskontingenter": 1607,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 20348,
+      "udgifterTotal": null,
+      "aaretsResultat": 525,
+      "egenkapital": 109496,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 1711,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 15814,
+      "udgifterTotal": 14445,
+      "aaretsResultat": 1168,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 8126,
+      "medlemskontingenter": 1388,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 35552,
+      "udgifterTotal": 34141,
+      "aaretsResultat": 1411,
+      "egenkapital": 11002,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2021": {
+      "offentligPartistotte": 8068,
+      "medlemskontingenter": 1902,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 17570,
+      "udgifterTotal": null,
+      "aaretsResultat": 471,
+      "egenkapital": 10491,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": 7834,
+      "medlemskontingenter": 1637,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 14688,
+      "udgifterTotal": 11386,
+      "aaretsResultat": 3302,
+      "egenkapital": 11919,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": 3894,
+      "medlemskontingenter": 1500,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 14450,
+      "udgifterTotal": 30021,
+      "aaretsResultat": null,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    }
+  },
+  "LA": {
+    "2024": {
+      "offentligPartistotte": 0,
+      "medlemskontingenter": 1667,
+      "privatePersoner": 0,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 4422,
+      "aaretsResultat": 2296,
+      "egenkapital": 2429,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Gl Vindige konferencecenter samt donation)",
+          "type": "person"
+        },
+        {
+          "name": "Solbjerghovedgaard ApS",
+          "type": "company"
+        },
+        {
+          "name": "BEERHGUMm",
+          "type": "person"
+        },
+        {
+          "name": "ViSKARER BALANCE 12",
+          "type": "person"
+        },
+        {
+          "name": "Øvrige rejseomkostninger 85.258 56",
+          "type": "person"
+        },
+        {
+          "name": "EDB-udgifter",
+          "type": "person"
+        },
+        {
+          "name": "Revision og regnskabsmæssig assistance 97.555 53",
+          "type": "person"
+        }
+      ]
+    },
+    "2023": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 1716,
+      "privatePersoner": 0,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 707,
+      "egenkapital": 133,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "benyttelse af Egelund Slot samt donation)",
+          "type": "person"
+        },
+        {
+          "name": "(=Tj",
+          "type": "person"
+        },
+        {
+          "name": "Kjøller A/ 5",
+          "type": "person"
+        },
+        {
+          "name": "DKK DKK <",
+          "type": "person"
+        },
+        {
+          "name": "eee er oe EL EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE  m——=. Ta",
+          "type": "person"
+        },
+        {
+          "name": "Kepræsentation",
+          "type": "person"
+        },
+        {
+          "name": "Kenræsentation",
+          "type": "person"
+        },
+        {
+          "name": "Møder og netværk 0 4.182",
+          "type": "person"
+        },
+        {
+          "name": "i BEERHOLM 12",
+          "type": "person"
+        }
+      ]
+    },
+    "2022": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 142103,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Egelund Slot samt donation)",
+          "type": "person"
+        },
+        {
+          "name": "LIND INVEST ApS v Henrik Lind",
+          "type": "company"
+        },
+        {
+          "name": "Lars Seier Christensen",
+          "type": "person"
+        },
+        {
+          "name": "FOSS A/S",
+          "type": "company"
+        },
+        {
+          "name": "POULSEN PROJEKT & INVEST APS",
+          "type": "company"
+        },
+        {
+          "name": "TEKNIQ ARBEJDSGIVERNE - INDUSTRI OG INSTALLATION",
+          "type": "person"
+        },
+        {
+          "name": "Kjøller A/S",
+          "type": "company"
+        },
+        {
+          "name": "Magnus Kjøller Holding ApS",
+          "type": "company"
+        },
+        {
+          "name": "GSA INVEST APS",
+          "type": "company"
+        },
+        {
+          "name": "Lars Kolind og Vibeke Reimer",
+          "type": "person"
+        },
+        {
+          "name": "Liberal Alliances Landsforening",
+          "type": "person"
+        }
+      ]
+    },
+    "2021": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 987,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 86,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Egelund Slot) ”",
+          "type": "person"
+        },
+        {
+          "name": "Magnus Kjøller Holding ApS",
+          "type": "company"
+        },
+        {
+          "name": "Liberal Alliances Landsforening",
+          "type": "person"
+        }
+      ]
+    },
+    "2020": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 1856,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 7634,
+      "udgifterTotal": null,
+      "aaretsResultat": 1453,
+      "egenkapital": 1453,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "t langfristede gældsforpligtejser",
+          "type": "person"
+        }
+      ]
+    },
+    "2019": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 86,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 860,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Egelund Slot)",
+          "type": "person"
+        },
+        {
+          "name": "Magnus Kjøller Holding ApS",
+          "type": "company"
+        },
+        {
+          "name": "Foss A/S",
+          "type": "company"
+        },
+        {
+          "name": "Lars Seler Christensen",
+          "type": "person"
+        },
+        {
+          "name": "Liberal Alliances Landsforening",
+          "type": "person"
+        }
+      ]
+    }
+  },
+  "ALT": {
+    "2024": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 872,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 5674,
+      "aaretsResultat": 1856,
+      "egenkapital": 4348,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 2491,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 1155,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": 6234,
+      "aaretsResultat": 551,
+      "egenkapital": 2102,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "IT Langfristede gældsforpligtelser",
+          "type": "person"
+        },
+        {
+          "name": "regnskabsåret",
+          "type": "person"
+        },
+        {
+          "name": "Tilbagebetalingskravet kan være større",
+          "type": "person"
+        },
+        {
+          "name": "Menneskebiblioteket (organisation) 10.000",
+          "type": "person"
+        },
+        {
+          "name": "Disposal CC ApS (selskab) 3.000",
+          "type": "company"
+        },
+        {
+          "name": "Underskrivernes identiteter er blevet registereret",
+          "type": "person"
+        },
+        {
+          "name": "Navnet er skjult Navnet er skjult",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesmedlem Bestyrelsesmedlem",
+          "type": "person"
+        },
+        {
+          "name": "Carsten Borup Jan Allan Andersen",
+          "type": "person"
+        },
+        {
+          "name": "Kristian Johnsen Lars Holstein Petersen",
+          "type": "person"
+        },
+        {
+          "name": "IP: 2.105.XXX.XXX an IP: 85.191.XXX.XXX Få rn:",
+          "type": "person"
+        },
+        {
+          "name": "Sådan kan du sikre",
+          "type": "person"
+        },
+        {
+          "name": "Underskrifterne idette dokument er juridisk bindende",
+          "type": "person"
+        },
+        {
+          "name": "Dan Mandsholm Lundstedt Thomas Quist Mortensen",
+          "type": "person"
+        }
+      ]
+    },
+    "2021": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 4961,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 2557,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "T Langiristede gældsforpiigtelser",
+          "type": "person"
+        }
+      ]
+    },
+    "2019": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 3502,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 12028,
+      "udgifterTotal": 12219,
+      "aaretsResultat": null,
+      "egenkapital": 1791,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Mie Hørlyck Mogensen",
+          "type": "person"
+        },
+        {
+          "name": "Tækker Group A/S",
+          "type": "company"
+        },
+        {
+          "name": "V6 ApS",
+          "type": "company"
+        },
+        {
+          "name": "Jens-Christian Bay Rasmussen Poul Brandrup",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesmedlem Bestyrelsesformand",
+          "type": "person"
+        },
+        {
+          "name": "Mads Damgaard Mortensen Tom Hjorth Grove \"",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesmedlem Bestyrelsesmediem",
+          "type": "person"
+        },
+        {
+          "name": "IP: 2",
+          "type": "person"
+        },
+        {
+          "name": "Anne-Marie Gertsen Anne-Marie Gertsen :",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesmedlem Næstformand",
+          "type": "person"
+        },
+        {
+          "name": "Thomas Vestergaard Bine Feldbæk Siefert å",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesmedlem Bestyrelsesmedlem",
+          "type": "person"
+        },
+        {
+          "name": "denne PDE",
+          "type": "person"
+        },
+        {
+          "name": "Sådan kan du sikre",
+          "type": "person"
+        },
+        {
+          "name": "Torben Petersen Nicolaisen Torben Petersen Nicolaisen",
+          "type": "person"
+        },
+        {
+          "name": "Bestyrelsesmedlem Kasserer",
+          "type": "person"
+        },
+        {
+          "name": "Kåre Krogh Wangel Lars Bonde Lindberg",
+          "type": "person"
+        },
+        {
+          "name": "Erik Stent Pedersen Jesper Peter Callesen =",
+          "type": "person"
+        },
+        {
+          "name": "IP: 80.62.XXX.XXX sæ IP: 212.112.XXX.XXX E . É",
+          "type": "person"
+        },
+        {
+          "name": "Bjarne Aalbæk å",
+          "type": "person"
+        },
+        {
+          "name": "Statsautoriseret revisor",
+          "type": "person"
+        },
+        {
+          "name": "På vegne af: Actis Revisorer A/S",
+          "type": "company"
+        },
+        {
+          "name": "IP: 87.54.XXX.XKX Æ=",
+          "type": "person"
+        }
+      ]
+    }
+  },
+  "KD": {
+    "2024": {
+      "offentligPartistotte": 9653,
+      "medlemskontingenter": 0,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": 653,
+      "medlemskontingenter": 5,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 1952,
+      "udgifterTotal": 2083,
+      "aaretsResultat": null,
+      "egenkapital": 165,
+      "andreIndtaegter": 0,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 2117,
+      "medlemskontingenter": 5,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 3149,
+      "udgifterTotal": 3701,
+      "aaretsResultat": null,
+      "egenkapital": 49,
+      "andreIndtaegter": 1,
+      "donors": []
+    },
+    "2021": {
+      "offentligPartistotte": 2102,
+      "medlemskontingenter": 5,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 3060,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 4,
+      "privatePersoner": 145,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 1346,
+      "udgifterTotal": 1052,
+      "aaretsResultat": 540,
+      "egenkapital": 10,
+      "andreIndtaegter": 2,
+      "donors": []
+    },
+    "2019": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 4,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 2625,
+      "udgifterTotal": 3192,
+      "aaretsResultat": null,
+      "egenkapital": 0,
+      "andreIndtaegter": null,
+      "donors": []
+    }
+  },
+  "NB": {
+    "2024": {
+      "offentligPartistotte": 4792,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 49,
+      "egenkapital": 0,
+      "andreIndtaegter": 2,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": 4630,
+      "medlemskontingenter": 0,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 1444,
+      "egenkapital": 0,
+      "andreIndtaegter": 2,
+      "donors": []
+    },
+    "2022": {
+      "offentligPartistotte": 2891,
+      "medlemskontingenter": 1041,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 368,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": null,
+      "andreIndtaegter": 2,
+      "donors": []
+    },
+    "2021": {
+      "offentligPartistotte": 2870,
+      "medlemskontingenter": 2693,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 5904,
+      "udgifterTotal": null,
+      "aaretsResultat": 1921,
+      "egenkapital": 2135,
+      "andreIndtaegter": 2,
+      "donors": []
+    },
+    "2020": {
+      "offentligPartistotte": 2787,
+      "medlemskontingenter": 1238,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 4386,
+      "udgifterTotal": null,
+      "aaretsResultat": 1212,
+      "egenkapital": 213,
+      "andreIndtaegter": 2,
+      "donors": []
+    }
+  },
+  "M": {
+    "2024": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 18535,
+      "udgifterTotal": null,
+      "aaretsResultat": 710,
+      "egenkapital": 944,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Altantic Invest Tuborg Havnevel 18",
+          "type": "person"
+        },
+        {
+          "name": "Dansk Generationsskifte Fiigogaovej 57",
+          "type": "person"
+        },
+        {
+          "name": "Jesper Morcussen Grønningen 5",
+          "type": "person"
+        },
+        {
+          "name": "BEER Side NE",
+          "type": "person"
+        },
+        {
+          "name": "digital underskrift Underskrvernes identiteter er blevet registreret",
+          "type": "person"
+        },
+        {
+          "name": "Ruth Schade Jesper Teichert Marcussen",
+          "type": "person"
+        },
+        {
+          "name": "Forrethingsudvalgsmedlen Forretningsudvalgsmedfem",
+          "type": "person"
+        },
+        {
+          "name": "tap G tap 6",
+          "type": "person"
+        },
+        {
+          "name": "Mitab C Mit 2D",
+          "type": "person"
+        },
+        {
+          "name": "Jakob Enget-Schmikit Jon Michael Pedersen Skålerud",
+          "type": "person"
+        },
+        {
+          "name": "Gitte Møller Højlund Lars Løkke Rasmussen",
+          "type": "person"
+        },
+        {
+          "name": "FE | i rr å i 3",
+          "type": "person"
+        },
+        {
+          "name": "Mitap Mitap",
+          "type": "person"
+        },
+        {
+          "name": "sen umderskeftsidsprktet Bevis for de inrdividuelke underskrrværes",
+          "type": "person"
+        },
+        {
+          "name": "information om Pennens kvalficerede tdlidstænester",
+          "type": "person"
+        },
+        {
+          "name": "Cis kan verificere de kryptograf'ske beviser vha",
+          "type": "person"
+        },
+        {
+          "name": "penne com vidner",
+          "type": "person"
+        },
+        {
+          "name": "dlgtale urderskrifver",
+          "type": "person"
+        }
+      ]
+    },
+    "2023": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": 768,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": 13932,
+      "udgifterTotal": 12365,
+      "aaretsResultat": 1553,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": []
+    }
+  },
+  "DD": {
+    "2024": {
+      "offentligPartistotte": 10611,
+      "medlemskontingenter": null,
+      "privatePersoner": 62,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": 1588,
+      "egenkapital": 3093,
+      "andreIndtaegter": null,
+      "donors": []
+    },
+    "2023": {
+      "offentligPartistotte": 2,
+      "medlemskontingenter": null,
+      "privatePersoner": 67,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": null,
+      "andreIndtaegter": null,
+      "donors": []
+    }
+  },
+  "FG": {
+    "2023": {
+      "offentligPartistotte": null,
+      "medlemskontingenter": null,
+      "privatePersoner": null,
+      "organisationer": null,
+      "anonymeTilskud": 0,
+      "indtaegterTotal": null,
+      "udgifterTotal": null,
+      "aaretsResultat": null,
+      "egenkapital": 20174,
+      "andreIndtaegter": null,
+      "donors": [
+        {
+          "name": "Ingen ni",
+          "type": "person"
+        },
+        {
+          "name": "Inagen ten",
+          "type": "person"
+        },
+        {
+          "name": "Re)",
+          "type": "person"
+        },
+        {
+          "name": "kr)",
+          "type": "person"
+        }
+      ]
+    }
+  }
+}
