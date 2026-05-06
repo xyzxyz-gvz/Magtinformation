@@ -8,7 +8,7 @@
   },
   {
     "short": "SF",
-    "letter": "F",
+    "letter": "SF",
     "navn": "SF – Socialistisk Folkeparti",
     "color": "#E64949",
     "left_order": 1
@@ -57,7 +57,7 @@
   },
   {
     "short": "DF",
-    "letter": "O",
+    "letter": "Ø",
     "navn": "Dansk Folkeparti",
     "color": "#C8102E",
     "left_order": 8
